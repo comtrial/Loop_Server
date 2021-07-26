@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'user_api.apps.UserApiConfig',
     'rest_framework',
     'rest_framework.authtoken',
+    'storages'
 ]
 
 REST_FRAMEWORK = {
@@ -112,19 +113,40 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Seoul'
 
 USE_I18N = True
 
 USE_L10N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.1/howto/static-files/
 
+
 STATIC_URL = '/static/'
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'static'),
+)
+
+
+
+# AWS s3설정
+
+AWS_ACCESS_KEY_ID = 'AKIA4XCDN5N2IUMDHTQG'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_REGION = 'ap-northeast-2'
+AWS_STORAGE_BUCKET_NAME = 'loopus'
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.%s.amazonaws.com' % (AWS_STORAGE_BUCKET_NAME,AWS_REGION)
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1024000000 # value in bytes 1GB here
+FILE_UPLOAD_MAX_MEMORY_SIZE = 1024000000
+
+DEFAULT_FILE_STORAGE = 'duallife_app.storages.S3DefaultStorage'
+STATICFILES_STORAGE = 'duallife_app.storages.S3StaticStorage'
