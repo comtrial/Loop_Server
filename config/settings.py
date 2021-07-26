@@ -148,5 +148,4 @@ AWS_S3_CUSTOM_DOMAIN = '%s.s3.%s.amazonaws.com' % (AWS_STORAGE_BUCKET_NAME,AWS_R
 DATA_UPLOAD_MAX_MEMORY_SIZE = 1024000000 # value in bytes 1GB here
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024000000
 
-DEFAULT_FILE_STORAGE = 'duallife_app.storages.S3DefaultStorage'
-STATICFILES_STORAGE = 'duallife_app.storages.S3StaticStorage'
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
