@@ -7,6 +7,9 @@ name = "pypi"
 mysqlclient = "*"
 djangorestframework = "*"
 pillow = "*"
+django-storages = "*"
+jwt = "*"
+pyjwt = "*"
 
 [dev-packages]
 pylint = "*"

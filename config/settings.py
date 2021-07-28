@@ -1,5 +1,6 @@
 
 from pathlib import Path
+from .my_settings import EMAIL
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -79,7 +80,7 @@ DATABASES = {
     'default': {
         
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Loop_DB',
+        'NAME': 'jjo3ys',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',
         'HOST': 'dual-life-instance.cezrhtu6o4hr.ap-northeast-2.rds.amazonaws.com',
@@ -87,6 +88,7 @@ DATABASES = {
         
     }
 }
+
 
 
 # Password validation
@@ -135,6 +137,15 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+# EMAIL SET
+SITE_ID = 1
+
+EMAIL_BACKEND = EMAIL['EMAIL_BACKEND']
+EMAIL_PORT = EMAIL['EMAIL_PORT']
+EMAIL_HOST = EMAIL['EMAIL_HOST']
+EMAIL_HOST_USER = EMAIL['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = EMAIL['EMAIL_HOST_PASSWORD']
+EMAIL_USE_TLS = EMAIL['EMAIL_USE_TLS']
 
 
 # AWS s3설정
@@ -149,3 +160,5 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 1024000000 # value in bytes 1GB here
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024000000
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+AUTH_USER_MODEL = 'user_api.UserCustom'
