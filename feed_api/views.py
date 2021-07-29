@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Feed
+from .models import Feed, Image
 from django.core.paginator import Paginator  
 from django.http import HttpResponse
 
@@ -10,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated 
 
 # to custom serilizer
-from .serializer import FeedSerializer
+from .serializer import FeedSerializer, ImageSeriallizer
 
 # Create your views here.
 
@@ -33,20 +33,40 @@ def upload(request):
     # except Feed.DoesNotExist:
     #     return Response(status=status.HTTP_404_NOT_FOUND)
         
-    user = request.user
-    print(user.password)
-
-    feed = Feed(author = user)
-
     if request.method == "POST":
-        serializer = FeedSerializer(feed, data = request.data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        user = request.user
+        feed = Feed(author = user)
+        data = request.data
+        feed_sz = FeedSerializer(feed, data = {'username':data['username'], 
+                                                  'title':data['title'], 
+                                                'content':data['content']})  
+        if feed_sz.is_valid():
+            feed_sz.save()        
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        if data['image'] != '':
+            print(data['image'])
+            print(type(data['image']))
+            feed_id = feed_sz.data['id']
 
+            image_sz = ImageSeriallizer(data = {'feed_id':feed_id, 
+                                                  'image':data['image']})
+            if image_sz.is_valid():
+                image_sz.save()
+        # for image in data['image']:
+        #     response_id = 0
+        #     image_sz = ImageSeriallizer(data={'image':image})
+        #     if image_sz.is_valid():
+        #         response_id = 1
+        #         image_sz.save()
+                return Response({"feed_data":feed_sz.data, "image_data":image_sz.data}, status=status.HTTP_201_CREATED)
+            else:
+                print("유효한형식이 아님")
+        else:
+            response_id = 1
+        if response_id == 1:
+            
+            return Response(feed_sz.data, status=status.HTTP_201_CREATED)
+        return Response(feed_sz.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # serialize 해 줄 꺼면 many = True 해줘서 진행해야할듯 
 @api_view(['GET', ])

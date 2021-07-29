@@ -10,8 +10,8 @@ SECRET_KEY = '*$32aaojr$%15egbonqy@aoo(ket!zt7j2z_zqgby1yqk$wid&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'x.x.x.x']
+ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'x.x.x.x']
 #ALLOWED_HOSTS = ['52.79.75.189']
 
 
@@ -79,7 +79,7 @@ DATABASES = {
     'default': {
         
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'Loop_DB',
+        'NAME': 'image',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',
         'HOST': 'dual-life-instance.cezrhtu6o4hr.ap-northeast-2.rds.amazonaws.com',
@@ -149,3 +149,4 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 1024000000 # value in bytes 1GB here
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024000000
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+AUTH_USER_MODEL = 'user_api.UserCustom'
