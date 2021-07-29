@@ -1,5 +1,6 @@
 
 from pathlib import Path
+from .my_settings import EMAIL
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -79,7 +80,8 @@ DATABASES = {
     'default': {
         
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'image',
+        'NAME': 'jjo3ys',
+        # 'NAME': 'image',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',
         'HOST': 'dual-life-instance.cezrhtu6o4hr.ap-northeast-2.rds.amazonaws.com',
@@ -87,6 +89,7 @@ DATABASES = {
         
     }
 }
+
 
 
 # Password validation
@@ -135,6 +138,15 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+# EMAIL SET
+SITE_ID = 1
+
+EMAIL_BACKEND = EMAIL['EMAIL_BACKEND']
+EMAIL_PORT = EMAIL['EMAIL_PORT']
+EMAIL_HOST = EMAIL['EMAIL_HOST']
+EMAIL_HOST_USER = EMAIL['EMAIL_HOST_USER']
+EMAIL_HOST_PASSWORD = EMAIL['EMAIL_HOST_PASSWORD']
+EMAIL_USE_TLS = EMAIL['EMAIL_USE_TLS']
 
 
 # AWS s3설정
