@@ -1,3 +1,4 @@
+from django.db.models.query import QuerySet
 from django.shortcuts import render
 from .models import Feed, Image
 from django.core.paginator import Paginator  
@@ -6,6 +7,7 @@ from django.http import HttpResponse
 # to custom rest_framework
 from rest_framework import status
 from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated 
 
@@ -14,7 +16,14 @@ from .serializer import FeedSerializer, ImageSeriallizer
 
 # Create your views here.
 
+class FeedViewSet(ModelViewSet):
+    queryset = Feed.objects.all()
+    sz_class = FeedSerializer
 
+    permission_classes = [IsAuthenticated,]
+
+    def perform_create(self, sz):
+        sz.save(owner=self.request.user)
 # feed upload 처리
 # input: {
 #   username: 
@@ -34,39 +43,28 @@ def upload(request):
     #     return Response(status=status.HTTP_404_NOT_FOUND)
         
     if request.method == "POST":
-        user = request.user
-        feed = Feed(author = user)
-        data = request.data
-        feed_sz = FeedSerializer(feed, data = {'username':data['username'], 
-                                                  'title':data['title'], 
-                                                'content':data['content']})  
+        try:
+            user = request.user
+            feed = Feed(author = user)
+            data = eval(request.POST['body'])    
+            feed_sz = FeedSerializer(feed, data = data)  
+        except:
+            return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
+
         if feed_sz.is_valid():
-            feed_sz.save()        
-
-        if data['image'] != '':
-            print(data['image'])
-            print(type(data['image']))
-            feed_id = feed_sz.data['id']
-
-            image_sz = ImageSeriallizer(data = {'feed_id':feed_id, 
-                                                  'image':data['image']})
-            if image_sz.is_valid():
-                image_sz.save()
-        # for image in data['image']:
-        #     response_id = 0
-        #     image_sz = ImageSeriallizer(data={'image':image})
-        #     if image_sz.is_valid():
-        #         response_id = 1
-        #         image_sz.save()
-                return Response({"feed_data":feed_sz.data, "image_data":image_sz.data}, status=status.HTTP_201_CREATED)
-            else:
-                print("유효한형식이 아님")
+            feed_sz.save()  
         else:
-            response_id = 1
-        if response_id == 1:
-            
-            return Response(feed_sz.data, status=status.HTTP_201_CREATED)
-        return Response(feed_sz.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
+
+        feed = Feed.objects.get(pk=feed_sz.data['id'])
+
+        try:
+            for image in request.FILES.getlist('files'):
+                Image.objects.create(feed=feed, image = image)
+        except:
+            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
+                      
+        return Response(feed_sz.data, status=status.HTTP_201_CREATED)
 
 # serialize 해 줄 꺼면 many = True 해줘서 진행해야할듯 
 @api_view(['GET', ])
@@ -89,11 +87,24 @@ def home_load(request):
         # 페이징처리
         paginator = Paginator(feeds, 3)  # 페이지당 3개씩 보여주기
         page_obj = paginator.get_page(page)
+        print(page_obj.end_index())# 총 피드 개수
 
         ## # 페이징처리
-
         serializer = FeedSerializer(page_obj, many = True)
-        return Response(serializer.data)
+        res_data = {}
+        res_data['data'] = []
+        for data in serializer.data:
+            print(data)
+            images = Image.objects.filter(feed_id=data['id'])
+            print(images)
+            res_data['data'].append({'id':data['id'],
+                                     'username':data['username'],
+                                     'title':data['title'],
+                                     'content':data['content'],
+                                     'image':images})
+            
+            
+        return Response(res_data)
     
 
 

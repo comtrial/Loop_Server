@@ -9,7 +9,8 @@ class ImageSeriallizer(serializers.ModelSerializer):
 
     class Meta:
         model = Image
-        fields = ['feed_id', 'image']    
+        fields = ['image']    
+    
     # def get_feed_id(self, image):
     #     feed_id = image.feed.id
     #     return feed_id
@@ -26,3 +27,8 @@ class FeedSerializer(serializers.ModelSerializer):
     def get_username_from_author(self, feed):   
         username = feed.author.username
         return username 
+    
+    def get_images(self, obj):
+        print(obj)
+        image = obj.image_set.all()
+        return ImageSeriallizer(image, many=True).data
