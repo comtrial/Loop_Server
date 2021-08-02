@@ -15,6 +15,9 @@ class Feed(models.Model):
         return self.title
 
 class Image(models.Model):
-    feed = models.ForeignKey(Feed, on_delete=models.CASCADE)
+    feed = models.ForeignKey('Feed', related_name='feed_image', on_delete=models.CASCADE)
     image = models.ImageField(null=True)
+    
+    # def __str__(self):
+    #     return self.image
 
