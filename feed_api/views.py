@@ -91,20 +91,8 @@ def home_load(request):
 
         ## # 페이징처리
         serializer = FeedSerializer(page_obj, many = True)
-        res_data = {}
-        res_data['data'] = []
-        for data in serializer.data:
-            print(data)
-            images = Image.objects.filter(feed_id=data['id'])
-            print(images)
-            res_data['data'].append({'id':data['id'],
-                                     'username':data['username'],
-                                     'title':data['title'],
-                                     'content':data['content'],
-                                     'image':images})
-            
-            
-        return Response(res_data)
+          
+        return Response(serializer.data)
     
 
 

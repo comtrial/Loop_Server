@@ -1,6 +1,6 @@
 
 from pathlib import Path
-from .my_settings import EMAIL
+from .my_settings import EMAIL, S3
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -151,8 +151,8 @@ EMAIL_USE_TLS = EMAIL['EMAIL_USE_TLS']
 
 # AWS s3설정
 
-AWS_ACCESS_KEY_ID = 'AKIA4XCDN5N2IUMDHTQG'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = S3['access_key']
+AWS_SECRET_ACCESS_KEY = S3['secret_key']
 AWS_REGION = 'ap-northeast-2'
 AWS_STORAGE_BUCKET_NAME = 'loopus'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.%s.amazonaws.com' % (AWS_STORAGE_BUCKET_NAME,AWS_REGION)

@@ -5,15 +5,11 @@ from rest_framework import serializers
 
 class ImageSeriallizer(serializers.ModelSerializer):
 
-    # id = serializers.SerializerMethodField('get_feed_id')
-
     class Meta:
         model = Image
         fields = ['image']    
     
-    # def get_feed_id(self, image):
-    #     feed_id = image.feed.id
-    #     return feed_id
+
 
 class FeedSerializer(serializers.ModelSerializer):
 
@@ -29,6 +25,5 @@ class FeedSerializer(serializers.ModelSerializer):
         return username 
     
     def get_images(self, obj):
-        print(obj)
         image = obj.image_set.all()
         return ImageSeriallizer(image, many=True).data

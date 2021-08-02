@@ -142,9 +142,6 @@ def signup(request):
         res_data['isAuthorization'] = 0
         #response
         return Response(res_data)
-        
-        
-
 
     # http method 가 post 가 아닐 경우
     else:
