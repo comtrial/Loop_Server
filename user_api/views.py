@@ -44,7 +44,7 @@ def signup_checkemail(request):
         email = data['email']
         password = data['password']
         department = data['department']
-        email = data['email']
+
         print(department)
         # django 제공 User 객체에 user 등록 진행
         user = User.objects.create_user(
