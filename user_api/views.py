@@ -24,6 +24,7 @@ from django.utils.encoding          import (
     force_text
 )   
 from django.conf.global_settings import SECRET_KEY
+from .department import DEPARTMENT
 import jwt
 # from .text import message 
  
@@ -62,7 +63,8 @@ def signup_checkemail(request):
         current_site = get_current_site(request)
         domain = current_site.domain
         uidb64 = urlsafe_base64_encode(force_bytes(user.id))
-        token = jwt.encode({'id': user.id}, SECRET_KEY,algorithm='HS256').decode('utf-8')
+        # token = jwt.encode({'id': user.id}, SECRET_KEY,algorithm='HS256').decode('utf-8')# ubuntu환경
+        token = jwt.encode({'id': user.id}, SECRET_KEY,algorithm='HS256')
         message_data = message(domain, uidb64, token)
 
 
@@ -147,3 +149,8 @@ def signup(request):
     else:
         #response
         return Response({ 'message': 'incorrenct method type please change method to "POST"'})
+
+@api_view(["GET", ])
+def get_list(request):
+    if request.method == 'GET':
+        return Response(DEPARTMENT)
