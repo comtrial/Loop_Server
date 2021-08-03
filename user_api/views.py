@@ -62,7 +62,7 @@ def signup_checkemail(request):
         current_site = get_current_site(request)
         domain = current_site.domain
         uidb64 = urlsafe_base64_encode(force_bytes(user.id))
-        token = jwt.encode({'id': user.id}, SECRET_KEY,algorithm='HS256')
+        token = jwt.encode({'id': user.id}, SECRET_KEY,algorithm='HS256').decode('utf-8')
         message_data = message(domain, uidb64, token)
 
 
@@ -142,9 +142,6 @@ def signup(request):
         res_data['isAuthorization'] = 0
         #response
         return Response(res_data)
-        
-        
-
 
     # http method 가 post 가 아닐 경우
     else:

@@ -1,6 +1,6 @@
 
 from pathlib import Path
-from .my_settings import EMAIL
+from .my_settings import EMAIL, S3
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -11,8 +11,8 @@ SECRET_KEY = '*$32aaojr$%15egbonqy@aoo(ket!zt7j2z_zqgby1yqk$wid&'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
-
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'x.x.x.x']
+ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'x.x.x.x']
 #ALLOWED_HOSTS = ['52.79.75.189']
 
 
@@ -81,6 +81,7 @@ DATABASES = {
         
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'jjo3ys',
+        # 'NAME': 'image',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',
         'HOST': 'dual-life-instance.cezrhtu6o4hr.ap-northeast-2.rds.amazonaws.com',
@@ -150,8 +151,8 @@ EMAIL_USE_TLS = EMAIL['EMAIL_USE_TLS']
 
 # AWS s3설정
 
-AWS_ACCESS_KEY_ID = 'AKIA4XCDN5N2IUMDHTQG'
-AWS_SECRET_ACCESS_KEY = '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'
+AWS_ACCESS_KEY_ID = S3['access_key']
+AWS_SECRET_ACCESS_KEY = S3['secret_key']
 AWS_REGION = 'ap-northeast-2'
 AWS_STORAGE_BUCKET_NAME = 'loopus'
 AWS_S3_CUSTOM_DOMAIN = '%s.s3.%s.amazonaws.com' % (AWS_STORAGE_BUCKET_NAME,AWS_REGION)
@@ -160,5 +161,4 @@ DATA_UPLOAD_MAX_MEMORY_SIZE = 1024000000 # value in bytes 1GB here
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024000000
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-
 AUTH_USER_MODEL = 'user_api.UserCustom'

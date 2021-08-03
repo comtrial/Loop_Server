@@ -10,3 +10,7 @@ EMAIL = {
 'EMAIL_HOST_PASSWORD' : 'invaluable97',
 # 'REDIRECT_PAGE' : 'http://10.58.5.40:3000/signin'
 }
+S3 = {
+    'access_key':'AKIA4XCDN5N2IUMDHTQG',
+    'secret_key':'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'
+}
