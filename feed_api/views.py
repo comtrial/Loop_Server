@@ -43,10 +43,12 @@ def upload(request):
     #     return Response(status=status.HTTP_404_NOT_FOUND)
         
     if request.method == "POST":
+
         try:
             user = request.user
             feed = Feed(author = user)
-            data = eval(request.POST['body'])    
+            # data = eval(request.POST['fields'])    
+            data = {'title':request.POST['title'], 'content':request.POST['content']}
             feed_sz = FeedSerializer(feed, data = data)  
         except:
             return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
@@ -59,7 +61,7 @@ def upload(request):
         feed = Feed.objects.get(pk=feed_sz.data['id'])
 
         try:
-            for image in request.FILES.getlist('files'):
+            for image in request.FILES.getlist('image'):
                 Image.objects.create(feed=feed, image = image)
         except:
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
