@@ -15,7 +15,8 @@ DEPARTMENT_CHOICES = (
     (4, "그 외")
 )
 
-class UserCustom(AbstractUser):#이미 makemigrations-migrate를 한경우AbstractUser가 적용이 안됨 auth_user를 다 설계한 이후에 migrations절차 진행 요망
+class UserCustom(AbstractUser):
+    #이미 makemigrations-migrate를 한경우AbstractUser가 적용이 안됨 auth_user를 다 설계한 이후에 migrations절차 진행 요망
     department = models.IntegerField(default=0, choices=DEPARTMENT_CHOICES)
     class Meta:
         db_table = "auth_user"
