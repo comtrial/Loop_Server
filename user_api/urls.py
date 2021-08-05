@@ -6,4 +6,5 @@ urlpatterns = [
     path('signup_checkemail/', views.signup_checkemail, name='signup_checkemail'),
     path('signup/', views.signup, name='signup'),
     path('activate/<str:uidb64>/<str:token>', views.Activate.as_view(), name = 'activate_email'),
+    path('getlist/', views.get_list, name='getlist'),
 ]
