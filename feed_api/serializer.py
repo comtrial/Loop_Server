@@ -1,16 +1,8 @@
-from .models import Feed, FeedImage, Comment, CommentImage
+from .models import Feed, FeedImage, Comment
 from rest_framework import serializers
 
-
-
-class CommentImageSeriallizer(serializers.ModelSerializer):
-    
-    class Meta:
-        model =  CommentImage
-        fields = ['image']
-
 class FeedImageSeriallizer(serializers.ModelSerializer):
-
+    
     class Meta:
         model = FeedImage
         fields = ['image']  
@@ -18,11 +10,10 @@ class FeedImageSeriallizer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     
     username = serializers.SerializerMethodField('get_username_from_author')
-    comment_image = CommentImageSeriallizer(many = True, read_only = True)
-
+    
     class Meta:
         model = Comment
-        fields = ['id', 'feed', 'username', 'content', 'created_at', 'comment_image']
+        fields = ['id', 'feed', 'username', 'content', 'created_at']
     
     def get_username_from_author(self, feed):   
         username = feed.author.username

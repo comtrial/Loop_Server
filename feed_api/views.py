@@ -1,6 +1,6 @@
 from django.db.models.query import QuerySet
 from django.shortcuts import render
-from .models import Feed, FeedImage, Comment, CommentImage
+from .models import Feed, FeedImage, Comment
 from django.core.paginator import Paginator  
 from django.http import HttpResponse
 
@@ -60,20 +60,9 @@ def comment_upload(request, idx):
 
         if comment_sz.is_valid():
             comment_sz.save()
-
         else:
 
-            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
-
-        comment = Comment.objects.get(pk=comment_sz.data['id'])
-        
-        try:
-            for image in request.FILES.getlist('image'):
-  
-                CommentImage.objects.create(comment=comment, image = image)
-        except:
-
-            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
+            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)         
 
         return Response(comment_sz.data, status = status.HTTP_201_CREATED)
         

@@ -24,9 +24,4 @@ class Comment(models.Model):
     feed = models.ForeignKey('Feed', related_name='feed_comment', on_delete=models.CASCADE)
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    
-class CommentImage(models.Model):
-    comment = models.ForeignKey('Comment', related_name='comment_image', on_delete=models.CASCADE)
-    image = models.ImageField(null=True)
-    
 
