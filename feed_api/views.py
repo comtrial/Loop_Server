@@ -1,6 +1,6 @@
 from django.db.models.query import QuerySet
 from django.shortcuts import render
-from .models import Feed, Image
+from .models import Feed, FeedImage, Comment
 from django.core.paginator import Paginator  
 from django.http import HttpResponse
 
@@ -12,42 +12,19 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated 
 
 # to custom serilizer
-from .serializer import FeedSerializer, ImageSeriallizer
+from .serializer import FeedSerializer, FeedImageSeriallizer, CommentSerializer
 
 # Create your views here.
 
-class FeedViewSet(ModelViewSet):
-    queryset = Feed.objects.all()
-    sz_class = FeedSerializer
-
-    permission_classes = [IsAuthenticated,]
-
-    def perform_create(self, sz):
-        sz.save(owner=self.request.user)
-# feed upload 처리
-# input: {
-#   username: 
-#   password:
-#   title:
-#   content:
-#   feed_img: option
-# }
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def upload(request):
-
-    # err 처리 ex)
-    # try:
-    #     pass
-    # except Feed.DoesNotExist:
-    #     return Response(status=status.HTTP_404_NOT_FOUND)
         
     if request.method == "POST":
 
         try:
             user = request.user
             feed = Feed(author = user)
-            # data = eval(request.POST['fields'])    
             data = {'title':request.POST['title'], 'content':request.POST['content']}
             feed_sz = FeedSerializer(feed, data = data)  
         except:
@@ -62,13 +39,34 @@ def upload(request):
 
         try:
             for image in request.FILES.getlist('image'):
-                Image.objects.create(feed=feed, image = image)
+                FeedImage.objects.create(feed=feed, image = image)
         except:
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
                       
         return Response(feed_sz.data, status=status.HTTP_201_CREATED)
 
-# serialize 해 줄 꺼면 many = True 해줘서 진행해야할듯 
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def comment_upload(request, idx):
+    if request.method == "POST":
+        try:
+            user = request.user
+            user = Comment(author = user)
+            
+        except:
+            return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
+ 
+        comment_sz = CommentSerializer(user, data = {'feed':idx, 'content':request.POST['content']})
+
+        if comment_sz.is_valid():
+            comment_sz.save()
+        else:
+
+            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)         
+
+        return Response(comment_sz.data, status = status.HTTP_201_CREATED)
+        
+
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 def home_load(request):
