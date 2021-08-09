@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'feed_api.apps.FeedApiConfig',
     'user_api.apps.UserApiConfig',
+    'notice_api.apps.NoticeApiConfig',
     'rest_framework',
     'rest_framework.authtoken',
     'storages'
