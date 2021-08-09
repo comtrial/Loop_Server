@@ -25,7 +25,7 @@ def upload(request):
         try:
             user = request.user
             feed = Feed(author = user)
-            data = {'title':request.POST['title'], 'content':request.POST['content']}
+            data = {'title':request.data['title'], 'content':request.data['content']}
             feed_sz = FeedSerializer(feed, data = data)  
         except:
             return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
@@ -56,7 +56,7 @@ def comment_upload(request, idx):
         except:
             return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
  
-        comment_sz = CommentSerializer(user, data = {'feed':idx, 'content':request.POST['content']})
+        comment_sz = CommentSerializer(user, data = {'feed':idx, 'content':request.data['content']})
 
         if comment_sz.is_valid():
             comment_sz.save()
