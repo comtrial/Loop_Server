@@ -26,17 +26,21 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'feed_api.apps.FeedApiConfig',
-    'user_api.apps.UserApiConfig',
     'notice_api.apps.NoticeApiConfig',
+    'user_api.apps.UserApiConfig',
     'rest_framework',
     'rest_framework.authtoken',
     'storages'
 ]
 
 REST_FRAMEWORK = {
+
+    # Web Test 때문에 꺼놈
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+
+
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.IsAuthenticated',
     # ]
@@ -44,6 +48,7 @@ REST_FRAMEWORK = {
 }
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -52,7 +57,8 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
-
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = False
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -81,7 +87,7 @@ DATABASES = {
     'default': {
         
         'ENGINE': 'django.db.backends.mysql',
-        #'NAME': 'jjo3ys',
+        # 'NAME': 'jjo3ys',
         'NAME': 'practice',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',

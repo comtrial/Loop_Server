@@ -6,6 +6,7 @@ class LikeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Like
+        # fields = ['username']
         fields = ['username', 'feed', 'comment']
     
     def get_username_from_author(self, feed):   
@@ -21,6 +22,7 @@ class FeedImageSerializer(serializers.ModelSerializer):
 class CommentSerializer(serializers.ModelSerializer):
     
     username = serializers.SerializerMethodField('get_username_from_author')
+    like = LikeSerializer(many = True, read_only = True)
 
     class Meta:
         model = Comment
@@ -35,6 +37,7 @@ class FeedSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField('get_username_from_author')
     feed_image = FeedImageSerializer(many = True, read_only = True)
     feed_comment = CommentSerializer(many = True, read_only = True)
+    like = LikeSerializer(many = True, read_only = True)
 
     class Meta:
         model = Feed

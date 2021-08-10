@@ -14,7 +14,7 @@ from django.contrib.auth import get_user_model
 # Create your views here.
 
 @api_view(['POST', ])
-@permission_classes((IsAuthenticated,))
+# @permission_classes((IsAuthenticated,))
 def upload(request):
     User = get_user_model()
     try:
@@ -43,7 +43,7 @@ def upload(request):
     return Response(notice_sz.data, status=status.HTTP_201_CREATED)
 
 @api_view(['GET', ])
-@permission_classes((IsAuthenticated,))
+# @permission_classes((IsAuthenticated,))
 def home_load(request):
     
     # Model에서 data get

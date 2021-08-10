@@ -8,6 +8,7 @@ class Feed(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     title = models.CharField(max_length=100)
     content = models.CharField(max_length=100)
+    # feed_img = models.ForeignKey('Image', on_delete=models.CASCADE)
     #content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
 
