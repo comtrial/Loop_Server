@@ -7,6 +7,7 @@ class Notice(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     title = models.CharField(max_length=100)
     content = models.TextField()
+    notice_url = models.TextField()
     department = models.IntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
