@@ -27,15 +27,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'feed_api.apps.FeedApiConfig',
     'notice_api.apps.NoticeApiConfig',
+    'user_api.apps.UserApiConfig',
     'rest_framework',
     'rest_framework.authtoken',
     'storages'
 ]
 
 REST_FRAMEWORK = {
+
+    # Web Test 때문에 꺼놈
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+
+
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.IsAuthenticated',
     # ]
