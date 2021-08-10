@@ -8,7 +8,7 @@ from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
 
 from django.contrib.auth import get_user_model
-
+from django.contrib.auth import authenticate
 # for email check
 from django.conf.global_settings import SECRET_KEY
 from django.views import View
@@ -26,15 +26,7 @@ from django.utils.encoding          import (
 from django.conf.global_settings import SECRET_KEY
 from .department import DEPARTMENT
 import jwt
-# from .text import message 
- 
-# Create your views here.
 
-# user 등록
-# input: {
-#   username: ''
-#   password: ''
-# }
 @api_view(["POST", ])
 def signup_checkemail(request):
     User = get_user_model()
@@ -144,6 +136,26 @@ def signup(request):
         res_data['isAuthorization'] = 0
         #response
         return Response(res_data)
+
+    # http method 가 post 가 아닐 경우
+    else:
+        #response
+        return Response({ 'message': 'incorrenct method type please change method to "POST"'})
+
+
+@api_view(["POST", ])
+def login(request):
+
+    if request.method == "POST":
+        
+        user = authenticate(username=request.data['username'], password=request.data['password'])
+        if user is not None:
+            token = Token.objects.get(user=user)
+            return Response({"Token": token.key})
+        else:
+            return Response(status=401)
+            
+
 
     # http method 가 post 가 아닐 경우
     else:
