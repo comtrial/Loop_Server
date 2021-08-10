@@ -10,37 +10,29 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated 
+from rest_framework.authtoken.models import Token
 
 # to custom serilizer
 from .serializer import FeedSerializer, ImageSeriallizer
 
 # Create your views here.
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def like(request, idx):
 
-class FeedViewSet(ModelViewSet):
-    queryset = Feed.objects.all()
-    sz_class = FeedSerializer
+    if request.method == 'POST':
+        user = Token.objects.get(key = idx)
+        try:
+            feed = Feed.objects.get(pk=idx)
+        except:
+            return Response('없는 게시물입니다.', status = status.HTTP_404_NOT_FOUND)
 
-    permission_classes = [IsAuthenticated,]
+        feed.like = feed.like + 1
+    return Response(status=status.HTTP_202_ACCEPTED)
 
-    def perform_create(self, sz):
-        sz.save(owner=self.request.user)
-# feed upload 처리
-# input: {
-#   username: 
-#   password:
-#   title:
-#   content:
-#   feed_img: option
-# }
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def upload(request):
-
-    # err 처리 ex)
-    # try:
-    #     pass
-    # except Feed.DoesNotExist:
-    #     return Response(status=status.HTTP_404_NOT_FOUND)
         
     if request.method == "POST":
         try:
@@ -70,7 +62,7 @@ def upload(request):
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 def home_load(request):
-    
+    print(request.META['HTTP_AUTHORIZATION'].split()[1], 11)
     # Model에서 data get
     try:
         feeds = Feed.objects.all()
@@ -93,8 +85,6 @@ def home_load(request):
         serializer = FeedSerializer(page_obj, many = True)
           
         return Response(serializer.data)
-    
-
 
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
