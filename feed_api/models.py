@@ -2,8 +2,6 @@ from django.db import models
 # for store user data by authorization
 from django.contrib.auth.models import User
 from django.conf import settings
-from taggit.managers import TaggableManager
-from taggit.models import TagBase, TaggedItemBase
 
 #For hastag
 # class Tag(TagBase):

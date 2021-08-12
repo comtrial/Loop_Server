@@ -1,7 +1,6 @@
 from django.db.models.fields import files
 from .models import Feed, FeedImage, Comment, Like, HashTag
 from rest_framework import serializers
-from taggit.serializers import TaggitSerializer, TagListSerializerField
 
 class HashTagSerializer(serializers.ModelSerializer):
 
@@ -40,7 +39,7 @@ class CommentSerializer(serializers.ModelSerializer):
         username = feed.author.username
         return username 
 
-class FeedSerializer(TaggitSerializer, serializers.ModelSerializer):
+class FeedSerializer(serializers.ModelSerializer):
 
     username = serializers.SerializerMethodField('get_username_from_author')
     feed_image = FeedImageSerializer(many = True, read_only = True)
