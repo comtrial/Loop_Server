@@ -10,6 +10,7 @@ pillow = "*"
 django-storages = "*"
 jwt = "*"
 pyjwt = "*"
+django-cors-headers = "*"
 
 [dev-packages]
 pylint = "*"
