@@ -25,11 +25,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'feed_api.apps.FeedApiConfig',
     'notice_api.apps.NoticeApiConfig',
     'user_api.apps.UserApiConfig',
+    
     'rest_framework',
     'rest_framework.authtoken',
+
     'storages'
 ]
 

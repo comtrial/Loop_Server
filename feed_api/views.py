@@ -1,8 +1,9 @@
 from django.db.models.query import QuerySet
 from django.shortcuts import render
-from .models import Feed, FeedImage, Comment
+from .models import Feed, FeedImage, Comment, Like, HashTag
 from django.core.paginator import Paginator  
 from django.http import HttpResponse
+from django.db.models import Q
 
 # to custom rest_framework
 from rest_framework import status
@@ -13,24 +14,35 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 
 # to custom serilizer
-from .serializer import FeedSerializer, FeedImageSeriallizer, CommentSerializer
+from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer
 
 # Create your views here.
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
-def like(request, idx):
-
-    if request.method == 'POST':
-        # user = Token.objects.get(key = idx)
-        try:
-            feed = Feed.objects.get(pk=idx)
+def like(request, type, idx):
+    user = request.user
+    like = Like(author = user)
+    if type == 'feed':
+        try: 
+            like_valid = Like.objects.get(feed_id=idx, author_id = user.id)
+            like_valid.delete()
+            return Response('disliked feed', status = status.HTTP_202_ACCEPTED)
         except:
-            return Response('없는 게시물입니다.', status = status.HTTP_404_NOT_FOUND)
-
-        feed.like = feed.like + 1
-        feed.save()
-
-    return Response(status=status.HTTP_202_ACCEPTED)
+            like_sz = LikeSerializer(like, data={'feed':idx})
+            if like_sz.is_valid():
+                like_sz.save()
+                return Response('liked feed', status = status.HTTP_202_ACCEPTED)
+    if type == 'comment':
+        try: 
+            like_valid = Like.objects.get(comment_id=idx, author_id = user.id)
+            like_valid.delete()
+            return Response('disliked comment', status = status.HTTP_202_ACCEPTED)
+        except:
+            like_sz = LikeSerializer(like, data={'comment':idx})
+            if like_sz.is_valid():
+                like_sz.save()
+                return Response('liked comment', status = status.HTTP_202_ACCEPTED)
+    
 
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
@@ -38,7 +50,7 @@ def upload(request):
         
     if request.method == "POST":
 
-        try:
+        try:    
             user = request.user
             feed = Feed(author = user)
             data = {'title':request.data['title'], 'content':request.data['content']}
@@ -49,15 +61,28 @@ def upload(request):
         if feed_sz.is_valid():
             feed_sz.save()  
         else:
+
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
 
         feed = Feed.objects.get(pk=feed_sz.data['id'])
         
         try:
             for image in request.FILES.getlist('image'):
-                FeedImage.objects.create(feed=feed, image = image)
+                image_sz = FeedImageSerializer(data = {'feed':feed_sz.data['id'], 'image':image})
+                if image_sz.is_valid():
+                    image_sz.save()
         except:
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
+
+    # try:
+        for tag in request.data['hashtag'].split('#'):
+            if tag != '':
+                tag_sz = HashTagSerializer(data = {'feed':feed_sz.data['id'], 'tag':tag})
+                if tag_sz.is_valid():
+                    tag_sz.save()
+    # except:
+    #     print('해쉬태그 안댐')
+    #     return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
 
         feed = Feed.objects.get(pk=feed_sz.data['id'])  
         feed_sz = FeedSerializer(feed)   
@@ -81,7 +106,7 @@ def comment_upload(request, idx):
             comment_sz.save()
         else:
 
-            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)         
+            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)       
 
         return Response(comment_sz.data, status = status.HTTP_201_CREATED)
         
@@ -89,10 +114,9 @@ def comment_upload(request, idx):
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 def home_load(request):
-    print(request.META['HTTP_AUTHORIZATION'].split()[1], 11)
     # Model에서 data get
     try:
-        feeds = Feed.objects.all()
+        feeds = Feed.objects.all().order_by('-id')
     except Feed.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -106,11 +130,20 @@ def home_load(request):
         # 페이징처리
         paginator = Paginator(feeds, 3)  # 페이지당 3개씩 보여주기
         page_obj = paginator.get_page(page)
-        print(page_obj.end_index())# 총 피드 개수
+        # print(page_obj.end_index())# 총 피드 개수
 
         ## # 페이징처리
         serializer = FeedSerializer(page_obj, many = True)
-          
+        for data in serializer.data:
+            try:
+                liked = Like.objects.get(feed_id=data['id'], author_id=request.user.id)
+                data.update({'feed_liked':1})
+            except:
+                pass
+
+            if data['username'] == request.user.username:
+                data.update({'is_author':1})
+            
         return Response(serializer.data)
 
 @api_view(['GET', ])
@@ -127,6 +160,30 @@ def detail_load(request, idx):
 
     # Serializer 을 통한 response 구성
     if request.method == "GET":
-        print(feed.author.date_joined)
+ 
         serializer = FeedSerializer(feed)
-        return Response(serializer.data)
+
+        for comment in serializer.data['feed_comment']:
+            try:
+                liked = Like.objects.get(comment_id=comment['id'], author_id=request.user.id)
+                comment.update({'comment_liked':1})
+            except:
+                pass
+
+            if comment['username'] == request.user.username:
+                comment.update({'is_author':1})
+
+        return_dict = {}
+        return_dict.update(serializer.data)
+
+        if serializer.data['username'] == request.user.username:
+            return_dict.update({'is_author' : 1})
+
+        try:
+            liked = Like.objects.get(feed_id=idx, author_id=request.user.id)
+            return_dict.update({'feed_liked' : 1})
+
+        except:
+            pass
+
+        return Response(return_dict)

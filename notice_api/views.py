@@ -21,7 +21,7 @@ def upload(request):
         user = request.user
         notice = Notice(author=user)
         department = user.department
-        data = {'title':request.POST['title'], 'content':request.POST['content'], 'department':department}
+        data = {'title':request.data['title'], 'content':request.data['content'], 'department':department, 'url':request.data['url']}
         notice_sz = NoticeSerializer(notice, data = data)
     
     except:
