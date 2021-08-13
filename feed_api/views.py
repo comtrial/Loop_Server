@@ -52,16 +52,17 @@ def upload(request):
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
 
         feed = Feed.objects.get(pk=feed_sz.data['id'])
-
+        
         try:
             for image in request.FILES.getlist('image'):
                 FeedImage.objects.create(feed=feed, image = image)
         except:
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
 
-        feed = Feed.objects.get(pk=feed_sz.data['id'])     
+        feed = Feed.objects.get(pk=feed_sz.data['id'])  
+        feed_sz = FeedSerializer(feed)   
 
-        return Response(feed, status=status.HTTP_201_CREATED)
+        return Response(feed_sz.data, status=status.HTTP_201_CREATED)
 
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
