@@ -3,7 +3,6 @@ from django.shortcuts import render
 from .models import Feed, FeedImage, Comment, Like, HashTag
 from django.core.paginator import Paginator  
 from django.http import HttpResponse
-from django.db.models import Q
 
 # to custom rest_framework
 from rest_framework import status
@@ -16,7 +15,7 @@ from rest_framework.authtoken.models import Token
 # to custom serilizer
 from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer
 
-# Create your views here.
+# UPLOAD
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def like(request, type, idx):
@@ -55,6 +54,7 @@ def upload(request):
             feed = Feed(author = user)
             data = {'title':request.data['title'], 'content':request.data['content']}
             feed_sz = FeedSerializer(feed, data = data)  
+
         except:
             return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
 
@@ -63,8 +63,6 @@ def upload(request):
         else:
 
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
-
-        feed = Feed.objects.get(pk=feed_sz.data['id'])
         
         try:
             for image in request.FILES.getlist('image'):
@@ -74,20 +72,17 @@ def upload(request):
         except:
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
 
-    # try:
         for tag in request.data['hashtag'].split('#'):
             if tag != '':
                 tag_sz = HashTagSerializer(data = {'feed':feed_sz.data['id'], 'tag':tag})
                 if tag_sz.is_valid():
                     tag_sz.save()
-    # except:
-    #     print('해쉬태그 안댐')
-    #     return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
 
         feed = Feed.objects.get(pk=feed_sz.data['id'])  
         feed_sz = FeedSerializer(feed)   
 
         return Response(feed_sz.data, status=status.HTTP_201_CREATED)
+
 
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
@@ -109,8 +104,50 @@ def comment_upload(request, idx):
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)       
 
         return Response(comment_sz.data, status = status.HTTP_201_CREATED)
+
+#UPDATE
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def update(request, type, idx):
+
+    if type == 'feed':
+        feed = Feed.objects.get(pk=idx)
+        feed.title = request.data['title']
+        feed.content = request.data['content']
+        feed.save()
+
+        tag = HashTag.objects.filter(feed_id = feed.id)
+        tag.delete()
+
+        for tag in request.data['hashtag'].split('#'):
+            if tag != '':
+                tag_sz = HashTagSerializer(data = {'feed':feed.id, 'tag':tag})
+                if tag_sz.is_valid():
+                    tag_sz.save()
+    
+    if type == 'comment':
+        comment = Comment.objects.get(pk = idx)
+        comment.content = request.data['content']
+        comment.save()
         
 
+#DELETE
+@api_view(['DELETE', ])
+@permission_classes((IsAuthenticated,))
+def delete(request, type, idx):
+    user = request.user.id 
+    if type == "feed":
+        feed = Feed.objects.get(pk = idx)
+        if feed.author_id == user:
+            feed.delete()
+    
+    if type == "comment":
+        comment = Comment.objects.get(pk = idx)
+        if comment.author_id == user:
+            comment.delete()
+
+
+#LOAD
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 def home_load(request):
