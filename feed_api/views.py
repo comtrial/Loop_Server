@@ -124,12 +124,17 @@ def update(request, type, idx):
                 tag_sz = HashTagSerializer(data = {'feed':feed.id, 'tag':tag})
                 if tag_sz.is_valid():
                     tag_sz.save()
+
+        feed_sz = FeedSerializer(feed)
+
+        return Response(feed_sz.data, status=status.HTTP_202_ACCEPTED)
     
     if type == 'comment':
         comment = Comment.objects.get(pk = idx)
         comment.content = request.data['content']
         comment.save()
-        
+        comment_sz = CommentSerializer(comment)
+        return Response(comment_sz.data, status=status.HTTP_202_ACCEPTED)
 
 #DELETE
 @api_view(['DELETE', ])
@@ -140,11 +145,13 @@ def delete(request, type, idx):
         feed = Feed.objects.get(pk = idx)
         if feed.author_id == user:
             feed.delete()
+            return Response("피드가 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
     
     if type == "comment":
         comment = Comment.objects.get(pk = idx)
         if comment.author_id == user:
             comment.delete()
+            return Response("댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
 
 
 #LOAD
