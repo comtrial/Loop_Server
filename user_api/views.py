@@ -4,8 +4,9 @@ from django.contrib.auth.models import User
 from .serializers import UserCustomSerializer
 from .models import UserCustom
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import IsAuthenticated 
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
@@ -166,3 +167,11 @@ def login(request):
 def get_list(request):
     if request.method == 'GET':
         return Response(DEPARTMENT)
+
+
+
+
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def makegroup(request):
+    leader = request.user
