@@ -8,4 +8,5 @@ urlpatterns = [
     path('login/', views.login, name='login'),
     path('activate/<str:uidb64>/<str:token>', views.Activate.as_view(), name = 'activate_email'),
     path('getlist/', views.get_list, name='getlist'),
+    path('profile_load/<idx>/', views.profile_load)
 ]

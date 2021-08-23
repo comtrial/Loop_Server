@@ -15,6 +15,19 @@ class UserCustom(AbstractUser):
     class Meta:
         db_table = "auth_user"
 
+
+class Profile(models.Model):
+    # nickname = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feed_comment', on_delete=models.CASCADE)
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, db_column='author_pk')
+    nickname = models.CharField(max_length=100, default= 'user_id')
+    profile_image = models.ImageField(null=True)
+    grade = models.CharField(max_length=100, default= '신입생')
+    
+    # 혹시 몰라 추가하는 field lists
+    class_num = models.CharField(max_length=100)
+    real_name = models.CharField(max_length=100)
+    class Meta:
+        db_table = "auth_user_profile"
         
 # token 형성 logic
 # @receiver(post_save, sender=settings.AUTH_USER_MODEL)

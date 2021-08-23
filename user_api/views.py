@@ -1,14 +1,19 @@
 from django.shortcuts import render, redirect
 import json
 from django.contrib.auth.models import User
-from .serializers import UserCustomSerializer
-from .models import UserCustom
+from .serializers import UserCustomSerializer, ProfileSerializer
+from feed_api.serializer import FeedSerializer
+from .models import UserCustom, Profile
+from feed_api.models import Feed
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
+from rest_framework import status
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
+
 # for email check
 from django.conf.global_settings import SECRET_KEY
 from django.views import View
@@ -38,7 +43,6 @@ def signup_checkemail(request):
         password = data['password']
         department = data['department']
 
-        print(department)
         # django 제공 User 객체에 user 등록 진행
         user = User.objects.create_user(
             username = username,
@@ -102,20 +106,31 @@ def signup(request):
         
         data = request.data
         username = data['username']
-        email = data['email']
-        password = data['password']
-        department = data['department']
+        # email = data['email']
+        # password = data['password']
+        # department = data['department']
 
         # django 제공 User 객체에 user 등록 진행
         user = UserCustom.objects.get(username = username)
 
+        # profile information 추가
         # email 인증 됬을 경우
         if user.is_active:
-
             try:
                 token = Token.objects.create(user = user)
-                print(token)
                 user.save()
+                profile = Profile(author = user)
+                data = {
+                    'nickname':data['nickname'], 
+                    'grade':data['grade'], 
+                    'class_num':data['class_num'], 
+                    'real_name':data['real_name']
+                }
+                profile_sz = ProfileSerializer(profile, data = data)
+                if profile_sz.is_valid():
+                    profile_sz.save()  
+                else:
+                    return Response('profile information is not invalid', status = status.HTTP_403_FORBIDDEN)
 
                 res_data = {}
                 res_data['message'] = 'login success'
@@ -166,3 +181,32 @@ def login(request):
 def get_list(request):
     if request.method == 'GET':
         return Response(DEPARTMENT)
+
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+def profile_load(request, idx):
+    # request.user.
+    try:
+        profile = Profile.objects.get(author = idx)
+        
+    except Profile.DoesNotExist :
+        return Response('해당 유저의 profile이 유효하지않습니다.', status=status.HTTP_404_NOT_FOUND)
+
+
+    if request.method == 'GET':
+        feeds = Feed.objects.filter(author_id = idx)
+        profile_sz = ProfileSerializer(profile)
+
+        return_dict = {
+            # 'profile_image' : request.FILES.get('image'),
+            'profile_image' : profile_sz.data['profile_image'],
+            'nickname' : profile_sz.data['nickname'],
+            'real_name' : profile_sz.data['real_name'],
+            'class_num' : profile_sz.data['class_num'],
+            'grade' : profile_sz.data['grade']
+        }
+
+
+        feed_list = FeedSerializer(feeds, many = True)
+
+        return Response(feed_list.data)
