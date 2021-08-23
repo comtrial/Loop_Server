@@ -33,6 +33,12 @@ class Comment(models.Model):
     content = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)    
 
+class Cocomment(models.Model):
+    author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    comment = models.ForeignKey('Comment', related_name='cocomment', on_delete=models.CASCADE)
+    content = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
 class Like(models.Model):
     feed = models.ForeignKey('Feed', null=True, related_name='like', on_delete=models.CASCADE)
     comment = models.ForeignKey('Comment', null=True, related_name='like', on_delete=models.CASCADE)

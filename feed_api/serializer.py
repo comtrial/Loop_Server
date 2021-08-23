@@ -1,5 +1,5 @@
 from django.db.models.fields import files
-from .models import Feed, FeedImage, Comment, Like, HashTag
+from .models import Feed, FeedImage, Comment, Like, HashTag, Cocomment
 from rest_framework import serializers
 
 class HashTagSerializer(serializers.ModelSerializer):
@@ -25,18 +25,31 @@ class FeedImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = FeedImage
         fields = ['feed', 'image']  
+
+class CocommentSerializer(serializers.ModelSerializer):
+
+    username = serializers.SerializerMethodField('get_username_from_author')
+
+    class Meta:
+        model = Cocomment
+        fields = ['id', 'comment', 'username','content', 'created_at']
+    
+    def get_username_from_author(self, comment):   
+        username = comment.author.username
+        return username 
     
 class CommentSerializer(serializers.ModelSerializer):
-    
+
+    cocomment = CocommentSerializer(many = True, read_only = True)
     username = serializers.SerializerMethodField('get_username_from_author')
     like = LikeSerializer(many = True, read_only = True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'feed', 'username', 'content', 'created_at', 'like']
+        fields = ['id', 'feed', 'username', 'content', 'created_at', 'like', 'cocomment']
     
-    def get_username_from_author(self, feed):   
-        username = feed.author.username
+    def get_username_from_author(self, comment):   
+        username = comment.author.username
         return username 
 
 class FeedSerializer(serializers.ModelSerializer):

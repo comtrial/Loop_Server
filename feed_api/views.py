@@ -1,6 +1,6 @@
 from django.db.models.query import QuerySet
 from django.shortcuts import render
-from .models import Feed, FeedImage, Comment, Like, HashTag
+from .models import Feed, FeedImage, Comment, Like, HashTag, Cocomment
 from django.core.paginator import Paginator  
 from django.http import HttpResponse
 
@@ -13,7 +13,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 
 # to custom serilizer
-from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer
+from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer, CocommentSerializer
 
 # UPLOAD
 @api_view(['POST', ])
@@ -87,23 +87,42 @@ def upload(request):
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def comment_upload(request, idx):
-    if request.method == "POST":
-        try:
-            user = request.user
-            user = Comment(author = user)
-            
-        except:
-            return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
- 
+    
+    user = request.user
+        
+    try:
+        user = Comment(author = user)
         comment_sz = CommentSerializer(user, data = {'feed':idx, 'content':request.data['content']})
+    except:
+        return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
 
-        if comment_sz.is_valid():
-            comment_sz.save()
-        else:
+    if comment_sz.is_valid():
+        comment_sz.save()
+    else:
 
-            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)       
+        return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)       
 
-        return Response(comment_sz.data, status = status.HTTP_201_CREATED)
+    return Response(comment_sz.data, status = status.HTTP_201_CREATED)
+
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def cocomment_upload(request, idx):
+    
+    user = request.user
+
+    try:
+        user = Cocomment(author = user)
+        comment_sz = CocommentSerializer(user, data = {'comment':idx, 'content':request.data['content']})
+    except:
+        return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
+            
+    if comment_sz.is_valid():
+        comment_sz.save()
+    else:
+
+        return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)       
+
+    return Response(comment_sz.data, status = status.HTTP_201_CREATED)
 
 #UPDATE
 @api_view(['POST', ])
@@ -136,6 +155,13 @@ def update(request, type, idx):
         comment_sz = CommentSerializer(comment)
         return Response(comment_sz.data, status=status.HTTP_202_ACCEPTED)
 
+    if type == 'cocomment':
+        comment = Cocomment.objects.get(pk = idx)
+        comment.content = request.data['content']
+        comment.save()
+        comment_sz = CommentSerializer(comment)
+        return Response(comment_sz.data, status=status.HTTP_202_ACCEPTED)
+
 #DELETE
 @api_view(['DELETE', ])
 @permission_classes((IsAuthenticated,))
@@ -152,6 +178,12 @@ def delete(request, type, idx):
         if comment.author_id == user:
             comment.delete()
             return Response("댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
+    
+    if type == "cocomment":
+        comment = Cocomment.objects.get(pk = idx)
+        if comment.author_id == user:
+            comment.delete()
+            return Response("대댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
 
 
 #LOAD
