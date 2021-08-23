@@ -229,8 +229,8 @@ def detail_load(request, idx):
     # Model에서 data get
     try:
 
-        feed = Feed.objects.get(id = idx)
-        
+        feed = Feed.objects.get(pk = idx)
+
     except Feed.DoesNotExist :
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -248,6 +248,10 @@ def detail_load(request, idx):
 
             if comment['username'] == request.user.username:
                 comment.update({'is_author':1})
+
+            for cocomment in comment['cocomment']:
+                if cocomment['username'] == request.user.username:
+                    cocomment.update({'is_author':1})
 
         return_dict = {}
         return_dict.update(serializer.data)
