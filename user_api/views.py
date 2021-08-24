@@ -197,7 +197,8 @@ def profile_load(request, idx):
         feeds = Feed.objects.filter(author_id = idx)
         profile_sz = ProfileSerializer(profile)
 
-        return_dict = {
+
+        profile_info = {
             # 'profile_image' : request.FILES.get('image'),
             'profile_image' : profile_sz.data['profile_image'],
             'nickname' : profile_sz.data['nickname'],
@@ -205,8 +206,16 @@ def profile_load(request, idx):
             'class_num' : profile_sz.data['class_num'],
             'grade' : profile_sz.data['grade']
         }
-
-
+        
         feed_list = FeedSerializer(feeds, many = True)
 
-        return Response(feed_list.data)
+        custom_list = {
+
+        }
+        return_dict = {
+            'profile_info' : profile_info,
+            'feed_list' : feed_list.data,
+            'custom_list' : custom_list
+            }
+        return Response(return_dict)
+
