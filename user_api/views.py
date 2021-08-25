@@ -9,7 +9,7 @@ from feed_api.serializer import FeedSerializer
 from .models import Customizing, Customizing_imgs, UserCustom, Profile
 from feed_api.models import Feed
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
@@ -236,7 +236,6 @@ def profile_load(request, idx):
 
 
 @api_view(['POST', ])
-@parser_classes((MultiPartParser, ))
 @permission_classes((IsAuthenticated,))
 def profile_update(request, prof_type, idx):
     if str(request.user.id) == idx:
@@ -259,8 +258,13 @@ def profile_update(request, prof_type, idx):
                     return Response('Request is not valid.', status=status.HTTP_404_NOT_FOUND)
 
             elif prof_type == 'customizing':
-                
-                customizing = Customizing.objects.filter(author_id = idx)
+
+                cum_val = 0
+
+                customizing = Customizing.objects.filter(author_id=idx)
+                customizing.delete()
+
+                customizing = Customizing_imgs.objects.filter(author_id=idx)
                 customizing.delete()
 
                 try:
@@ -270,10 +274,10 @@ def profile_update(request, prof_type, idx):
                     for line in req_list:
                         customizing_model = Customizing(author=request.user)
                         customizing_sz = CustomizingSerializer(customizing_model, data={
-                                'type': line['type'],
-                                'contents': line['contents'],
-                                'seq_id': line['id']
-                            })
+                            'type': line['type'],
+                            'contents': line['contents'],
+                            'seq_id': line['id']
+                        })
 #############################################################################################################################
                         if line['type'] == 'title' or line['type'] == 'content':
                             print('here is type_text')
@@ -281,7 +285,7 @@ def profile_update(request, prof_type, idx):
                                 customizing_sz.save()
 
                             else:
-                                return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
+                                return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
 
                             print('text updated')
 
@@ -291,31 +295,48 @@ def profile_update(request, prof_type, idx):
                             if customizing_sz.is_valid():
                                 customizing_sz.save()
                             else:
-                                return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
-                            
+                                return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
+
                             try:
 
-                                for image in request.FILES.getlist('image'):
-                                    print("image:", image)
-                                    print("customizing_sz.data:", customizing_sz.data)
-                                    image_sz = Customizing_imgs_Serializer(data = {'customizing_id_id':customizing_sz.data['id'], 'image':image})
-                                    print("image_sz:", image_sz)
-                                    print('왜 안찍히는거야?')
-                                    if image_sz.is_valid():
-                                        print("여기2")
-                                        image_sz.save()
-                            except:
-                                return Response('유효하지 않은 image 형식입니다.', status = status.HTTP_403_FORBIDDEN)
+                                start_num = cum_val
+                                end_num = start_num + line['contents']
+                                cum_val = end_num
 
-                            
-                            print('image updated')
+                                pointed_list = request.FILES.getlist(
+                                    'image')[start_num:end_num]
+
+                                for image in pointed_list:
+                                    try:
+                                        custom_model = Customizing_imgs(
+                                            author=request.user)
+                                        print("custom_model:", custom_model)
+
+                                    except:
+                                        return Response('없는 사용자입니다.', status=status.HTTP_404_NOT_FOUND)
+
+                                    # print("idx:", idx)
+                                    # print("image:", image)
+                                    customizing_imgs_sz = Customizing_imgs_Serializer(
+                                        custom_model, data={'customizing': customizing_sz.data['id'], 'image': image})
+                                    # print("customizing_imgs_sz:",
+                                    #       customizing_imgs_sz)
+                                    if customizing_imgs_sz.is_valid():
+                                        print("여기2")
+                                        customizing_imgs_sz.save()
+                                        print("???????")
+                                    else:
+                                        print("데이터가 저장되지 않았습니다.")
+                            except:
+                                return Response('유효하지 않은 image 형식입니다.', status=status.HTTP_403_FORBIDDEN)
+
+                            print('image_custom updated')
 #############################################################################################################################
                         elif line['type'] == 'feed':
                             print('here is type_feed')
 
                             print('feed updated')
 
-                        
                     return Response('update complete')
 
                 except Profile.DoesNotExist:
@@ -353,20 +374,20 @@ def profile_update(request, prof_type, idx):
 #         comment.save()
 
 
-@parser_classes((MultiPartParser, ))
-class UploadFileAndJson(APIView):
+# @parser_classes((MultiPartParser, ))
+# class UploadFileAndJson(APIView):
 
-    def post(self, request, format=None):
-        print('여기까지는 들어온다')
-        file_data = request.FILES["image"]
-        print('이미지 다음')
-        # info_data = request.data["0"]
-        print('json 다음')
-        res_data = {
-            "file_data": file_data
-            # "info_data": info_data
-        }
-        print("res_data:", res_data)
+#     def post(self, request, format=None):
+#         print('여기까지는 들어온다')
+#         file_data = request.FILES["image"]
+#         print('이미지 다음')
+#         # info_data = request.data["0"]
+#         print('json 다음')
+#         res_data = {
+#             "file_data": file_data
+#             # "info_data": info_data
+#         }
+#         print("res_data:", res_data)
 
-        return response(file_data)
-        return response(res_data)
+#         return response(file_data)
+#         return response(res_data)

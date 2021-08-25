@@ -39,7 +39,7 @@ class Customizing(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     id = models.AutoField(db_column='id', primary_key=True)
     type = models.CharField(max_length=100)
-    contents = models.TextField()
+    contents = models.TextField(null=True)
     seq_id = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -51,7 +51,9 @@ class Customizing(models.Model):
 
 
 class Customizing_imgs(models.Model):
-    customizing_id = models.ForeignKey(
+    author = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    customizing = models.ForeignKey(
         'Customizing', related_name='customizing_image', on_delete=models.CASCADE)
     image = models.ImageField(null=True)
 

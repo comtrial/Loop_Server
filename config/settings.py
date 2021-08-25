@@ -42,8 +42,7 @@ REST_FRAMEWORK = {
 
     # Web Test 때문에 꺼놈
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
-        'rest_framework.parsers.MultiPartParser'
+        'rest_framework.authentication.TokenAuthentication'
     ],
 
 

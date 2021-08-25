@@ -11,7 +11,4 @@ urlpatterns = [
     path('getlist/', views.get_list, name='getlist'),
     path('profile_load/<idx>/', views.profile_load),
     path('profile_update/<prof_type>/<idx>/', views.profile_update),
-
-    # path('UploadFileAndJson/', views.post),
-    path('books/', views.UploadFileAndJson.as_view(), name='books')
 ]
