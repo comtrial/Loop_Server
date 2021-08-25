@@ -1,3 +1,6 @@
+from django.http import response
+from rest_framework.decorators import parser_classes
+from rest_framework.views import APIView
 from django.shortcuts import render, redirect
 import json
 from django.contrib.auth.models import User
@@ -6,7 +9,8 @@ from feed_api.serializer import FeedSerializer
 from .models import Customizing, Customizing_imgs, UserCustom, Profile
 from feed_api.models import Feed
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, parser_classes
+from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework import status
@@ -232,76 +236,97 @@ def profile_load(request, idx):
 
 
 @api_view(['POST', ])
+@parser_classes((MultiPartParser, ))
 @permission_classes((IsAuthenticated,))
-def profile_update(request, type, idx):
+def profile_update(request, prof_type, idx):
     if str(request.user.id) == idx:
-        if type == 'profile_info':
-            try:
-                profile = Profile.objects.get(author=idx)
-                profile.profile_image = request.data['image']
-                profile.nickname = request.data['nickname']
-                profile.real_name = request.data['real_name']
-                profile.class_num = request.data['class_num']
-                profile.grade = request.data['grade']
-                # feed.content = request.data['content']
-                profile.save()
-                return_dict = {
-                    'Update Completed'
-                }
-                return Response(return_dict)
-            except Profile.DoesNotExist:
-                return Response('Request is not valid.', status=status.HTTP_404_NOT_FOUND)
+        try:
+            if prof_type == 'profile_info':
+                try:
+                    profile = Profile.objects.get(author=idx)
+                    profile.profile_image = request.data['image']
+                    profile.nickname = request.data['nickname']
+                    profile.real_name = request.data['real_name']
+                    profile.class_num = request.data['class_num']
+                    profile.grade = request.data['grade']
+                    # feed.content = request.data['content']
+                    profile.save()
+                    return_dict = {
+                        'Update Completed'
+                    }
+                    return Response(return_dict)
+                except Profile.DoesNotExist:
+                    return Response('Request is not valid.', status=status.HTTP_404_NOT_FOUND)
 
-        elif type == 'customizing':
+            elif prof_type == 'customizing':
+                
+                customizing = Customizing.objects.filter(author_id = idx)
+                customizing.delete()
 
-            try:
-                user = request.user
-                customizing = Customizing(author=user)
-                data = {
-                    'seq': request.data['id'],
-                    'type': request.data['type'],
-                    'content': request.data['content']
-                }
-                feed_sz = CustomizingSerializer(customizing, data=data)
-                # print("feed_sz:", feed_sz)
+                try:
+                    param_data = request.data['customizing_data']
 
-            except:
-                return Response('없는 사용자입니다.', status=status.HTTP_404_NOT_FOUND)
+                    req_list = json.JSONDecoder().decode(param_data)
+                    for line in req_list:
+                        customizing_model = Customizing(author=request.user)
+                        customizing_sz = CustomizingSerializer(customizing_model, data={
+                                'type': line['type'],
+                                'contents': line['contents'],
+                                'seq_id': line['id']
+                            })
+#############################################################################################################################
+                        if line['type'] == 'title' or line['type'] == 'content':
+                            print('here is type_text')
+                            if customizing_sz.is_valid():
+                                customizing_sz.save()
 
-            if feed_sz.is_valid():
-                feed_sz.save()
-            else:
+                            else:
+                                return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
 
-                return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
+                            print('text updated')
 
-            try:
-                for image in request.FILES.getlist('image'):
-                    image_sz = FeedImageSerializer(
-                        data={'feed': feed_sz.data['id'], 'image': image})
-                    if image_sz.is_valid():
-                        image_sz.save()
-            except:
-                return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
+#############################################################################################################################
+                        elif line['type'] == 'image':
+                            print('here is type_image')
+                            if customizing_sz.is_valid():
+                                customizing_sz.save()
+                            else:
+                                return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
+                            
+                            try:
 
-            for tag in request.data['hashtag'].split('#'):
-                if tag != '':
-                    tag_sz = HashTagSerializer(
-                        data={'feed': feed_sz.data['id'], 'tag': tag})
-                    if tag_sz.is_valid():
-                        tag_sz.save()
+                                for image in request.FILES.getlist('image'):
+                                    print("image:", image)
+                                    print("customizing_sz.data:", customizing_sz.data)
+                                    image_sz = Customizing_imgs_Serializer(data = {'customizing_id_id':customizing_sz.data['id'], 'image':image})
+                                    print("image_sz:", image_sz)
+                                    print('왜 안찍히는거야?')
+                                    if image_sz.is_valid():
+                                        print("여기2")
+                                        image_sz.save()
+                            except:
+                                return Response('유효하지 않은 image 형식입니다.', status = status.HTTP_403_FORBIDDEN)
 
-            feed = Feed.objects.get(pk=feed_sz.data['id'])
-            feed_sz = FeedSerializer(feed)
+                            
+                            print('image updated')
+#############################################################################################################################
+                        elif line['type'] == 'feed':
+                            print('here is type_feed')
 
-            return Response(feed_sz.data, status=status.HTTP_201_CREATED)
+                            print('feed updated')
 
-            comment = Comment.objects.get(pk=idx)
-            comment.content = request.data['content']
-            comment.save()
+                        
+                    return Response('update complete')
 
+                except Profile.DoesNotExist:
+                    return Response('Request is not valid.', status=status.HTTP_404_NOT_FOUND)
+        except Profile.DoesNotExist:
+            return Response('Request is not valid.', status=status.HTTP_404_NOT_FOUND)
     else:
-        return Response('No permission to modify.', status=status.HTTP_401_NOT_FOUND)
-
+        return_dict = {
+            'message': ['No permission to modify.']
+        }
+        return Response(return_dict, status=status.HTTP_401_UNAUTHORIZED)
 
 # @api_view(['POST', ])
 # @permission_classes((IsAuthenticated,))
@@ -326,3 +351,22 @@ def profile_update(request, type, idx):
 #         comment = Comment.objects.get(pk = idx)
 #         comment.content = request.data['content']
 #         comment.save()
+
+
+@parser_classes((MultiPartParser, ))
+class UploadFileAndJson(APIView):
+
+    def post(self, request, format=None):
+        print('여기까지는 들어온다')
+        file_data = request.FILES["image"]
+        print('이미지 다음')
+        # info_data = request.data["0"]
+        print('json 다음')
+        res_data = {
+            "file_data": file_data
+            # "info_data": info_data
+        }
+        print("res_data:", res_data)
+
+        return response(file_data)
+        return response(res_data)

@@ -40,7 +40,7 @@ class Customizing(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     type = models.CharField(max_length=100)
     contents = models.TextField()
-    seq_id = models.CharField(max_length=100, unique=True)
+    seq_id = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -48,12 +48,10 @@ class Customizing(models.Model):
 
     # def __str__(self):
     #     return self.title
-# ↓
-# ↑
 
 
 class Customizing_imgs(models.Model):
-    customizing = models.ForeignKey(
+    customizing_id = models.ForeignKey(
         'Customizing', related_name='customizing_image', on_delete=models.CASCADE)
     image = models.ImageField(null=True)
 

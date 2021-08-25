@@ -51,9 +51,13 @@ def upload(request):
 
         try:    
             user = request.user
+            # print("user:", user)
+            # print("user_type:", type(user))
             feed = Feed(author = user)
+            # print("feed_type:", type(feed))
             data = {'title':request.data['title'], 'content':request.data['content']}
-            feed_sz = FeedSerializer(feed, data = data)  
+            feed_sz = FeedSerializer(feed, data = data)
+            # print("feed_sz:", feed_sz)  
 
         except:
             return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
@@ -67,7 +71,9 @@ def upload(request):
         try:
             for image in request.FILES.getlist('image'):
                 image_sz = FeedImageSerializer(data = {'feed':feed_sz.data['id'], 'image':image})
+                print('feed_image_sz:', image_sz)
                 if image_sz.is_valid():
+                    print('이건 벨리드지')
                     image_sz.save()
         except:
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
