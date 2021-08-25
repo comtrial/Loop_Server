@@ -167,7 +167,7 @@ def detail_load(request, idx):
         return_dict.update(serializer.data)
 
         if serializer.data['username'] == request.user.username:
-            return_dict.update({'is_autor' : 1})
+            return_dict.update({'is_author' : 1})
 
         try:
             liked = Like.objects.get(feed_id=idx, author_id=request.user.id)
