@@ -18,6 +18,7 @@ class Feed(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     title = models.CharField(max_length=100)
     content = models.TextField()
+    # feed_type = models.IntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

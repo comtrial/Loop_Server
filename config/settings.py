@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'feed_api.apps.FeedApiConfig',
     'notice_api.apps.NoticeApiConfig',
     'user_api.apps.UserApiConfig',
+    'group_api.apps.GroupApiConfig',
     
     'rest_framework',
     'rest_framework.authtoken',
@@ -102,7 +103,7 @@ DATABASES = {
     'default': {
         
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jjo3ys',
+        'NAME': 'practice',
         # 'NAME': 'practice',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',
