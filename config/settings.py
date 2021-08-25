@@ -25,11 +25,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'feed_api.apps.FeedApiConfig',
     'notice_api.apps.NoticeApiConfig',
     'user_api.apps.UserApiConfig',
+    
     'rest_framework',
     'rest_framework.authtoken',
+
+    'drf_yasg',
+
     'storages'
 ]
 
@@ -45,6 +50,16 @@ REST_FRAMEWORK = {
     #     'rest_framework.permissions.IsAuthenticated',
     # ]
      
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'api_key': {
+            'type': 'apiKey',
+            'in': 'header',
+            'name': 'Authorization'
+        }
+    },
 }
 
 MIDDLEWARE = [

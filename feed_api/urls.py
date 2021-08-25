@@ -8,5 +8,8 @@ urlpatterns = [
     path('like/<type>/<idx>/', views.like),
     path('home_load', views.home_load),
     path('detail_load/<idx>/', views.detail_load),
-    path('comment_upload/<idx>/', views.comment_upload)
+    path('delete/<type>/<idx>/', views.delete),
+    path('update/<type>/<idx>/', views.update),
+    path('comment_upload/<idx>/', views.comment_upload),
+    path('cocomment_upload/<idx>/', views.cocomment_upload)
 ]

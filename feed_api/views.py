@@ -1,9 +1,8 @@
 from django.db.models.query import QuerySet
 from django.shortcuts import render
-from .models import Feed, FeedImage, Comment, Like
+from .models import Feed, FeedImage, Comment, Like, HashTag, Cocomment
 from django.core.paginator import Paginator  
 from django.http import HttpResponse
-from django.db.models import Q
 
 # to custom rest_framework
 from rest_framework import status
@@ -11,11 +10,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated 
+from rest_framework.authtoken.models import Token
 
 # to custom serilizer
-from .serializer import FeedSerializer, CommentSerializer, LikeSerializer
+from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer, CocommentSerializer
 
-# Create your views here.
+# UPLOAD
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def like(request, type, idx):
@@ -49,7 +49,7 @@ def upload(request):
         
     if request.method == "POST":
 
-        try:
+        try:    
             user = request.user
             feed = Feed(author = user)
             data = {'title':request.data['title'], 'content':request.data['content']}
@@ -61,50 +61,138 @@ def upload(request):
         if feed_sz.is_valid():
             feed_sz.save()  
         else:
-            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
 
-        feed = Feed.objects.get(pk=feed_sz.data['id'])
+            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)   
         
         try:
             for image in request.FILES.getlist('image'):
-                FeedImage.objects.create(feed=feed, image = image)
+                image_sz = FeedImageSerializer(data = {'feed':feed_sz.data['id'], 'image':image})
+                if image_sz.is_valid():
+                    image_sz.save()
         except:
             return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
+
+        for tag in request.data['hashtag'].split('#'):
+            if tag != '':
+                tag_sz = HashTagSerializer(data = {'feed':feed_sz.data['id'], 'tag':tag})
+                if tag_sz.is_valid():
+                    tag_sz.save()
 
         feed = Feed.objects.get(pk=feed_sz.data['id'])  
         feed_sz = FeedSerializer(feed)   
 
         return Response(feed_sz.data, status=status.HTTP_201_CREATED)
 
+
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def comment_upload(request, idx):
-    if request.method == "POST":
-        try:
-            user = request.user
-            user = Comment(author = user)
-            
-        except:
-            return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
- 
-        comment_sz = CommentSerializer(user, data = {'feed':idx, 'content':request.data['content']})
-
-        if comment_sz.is_valid():
-            comment_sz.save()
-        else:
-
-            return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)       
-
-        return Response(comment_sz.data, status = status.HTTP_201_CREATED)
+    
+    user = request.user
         
+    try:
+        user = Comment(author = user)
+        comment_sz = CommentSerializer(user, data = {'feed':idx, 'content':request.data['content']})
+    except:
+        return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
 
+    if comment_sz.is_valid():
+        comment_sz.save()
+    else:
+
+        return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)       
+
+    return Response(comment_sz.data, status = status.HTTP_201_CREATED)
+
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def cocomment_upload(request, idx):
+    
+    user = request.user
+
+    try:
+        user = Cocomment(author = user)
+        comment_sz = CocommentSerializer(user, data = {'comment':idx, 'content':request.data['content']})
+    except:
+        return Response('없는 사용자입니다.', status = status.HTTP_404_NOT_FOUND)
+            
+    if comment_sz.is_valid():
+        comment_sz.save()
+    else:
+
+        return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)       
+
+    return Response(comment_sz.data, status = status.HTTP_201_CREATED)
+
+#UPDATE
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def update(request, type, idx):
+
+    if type == 'feed':
+        feed = Feed.objects.get(pk=idx)
+        feed.title = request.data['title']
+        feed.content = request.data['content']
+        feed.save()
+
+        tag = HashTag.objects.filter(feed_id = feed.id)
+        tag.delete()
+
+        for tag in request.data['hashtag'].split('#'):
+            if tag != '':
+                tag_sz = HashTagSerializer(data = {'feed':feed.id, 'tag':tag})
+                if tag_sz.is_valid():
+                    tag_sz.save()
+
+        feed_sz = FeedSerializer(feed)
+
+        return Response(feed_sz.data, status=status.HTTP_202_ACCEPTED)
+    
+    if type == 'comment':
+        comment = Comment.objects.get(pk = idx)
+        comment.content = request.data['content']
+        comment.save()
+        comment_sz = CommentSerializer(comment)
+        return Response(comment_sz.data, status=status.HTTP_202_ACCEPTED)
+
+    if type == 'cocomment':
+        comment = Cocomment.objects.get(pk = idx)
+        comment.content = request.data['content']
+        comment.save()
+        comment_sz = CommentSerializer(comment)
+        return Response(comment_sz.data, status=status.HTTP_202_ACCEPTED)
+
+#DELETE
+@api_view(['DELETE', ])
+@permission_classes((IsAuthenticated,))
+def delete(request, type, idx):
+    user = request.user.id 
+    if type == "feed":
+        feed = Feed.objects.get(pk = idx)
+        if feed.author_id == user:
+            feed.delete()
+            return Response("피드가 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
+    
+    if type == "comment":
+        comment = Comment.objects.get(pk = idx)
+        if comment.author_id == user:
+            comment.delete()
+            return Response("댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
+    
+    if type == "cocomment":
+        comment = Cocomment.objects.get(pk = idx)
+        if comment.author_id == user:
+            comment.delete()
+            return Response("대댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
+
+
+#LOAD
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
 def home_load(request):
-    
     # Model에서 data get
     try:
-        feeds = Feed.objects.all()
+        feeds = Feed.objects.all().order_by('-id')
     except Feed.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -133,8 +221,6 @@ def home_load(request):
                 data.update({'is_author':1})
             
         return Response(serializer.data)
-    
-
 
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
@@ -143,8 +229,8 @@ def detail_load(request, idx):
     # Model에서 data get
     try:
 
-        feed = Feed.objects.get(id = idx)
-        
+        feed = Feed.objects.get(pk = idx)
+
     except Feed.DoesNotExist :
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -162,6 +248,10 @@ def detail_load(request, idx):
 
             if comment['username'] == request.user.username:
                 comment.update({'is_author':1})
+
+            for cocomment in comment['cocomment']:
+                if cocomment['username'] == request.user.username:
+                    cocomment.update({'is_author':1})
 
         return_dict = {}
         return_dict.update(serializer.data)
