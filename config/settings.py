@@ -102,8 +102,8 @@ DATABASES = {
     'default': {
 
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jjo3ys',
-        # 'NAME': 'gilhan_practice',
+        # 'NAME': 'jjo3ys',
+        'NAME': 'gilhan_practice',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',
         'HOST': 'dual-life-instance.cezrhtu6o4hr.ap-northeast-2.rds.amazonaws.com',
