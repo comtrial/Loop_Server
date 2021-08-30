@@ -200,6 +200,7 @@ def profile_load(request, idx):
 
     if request.method == 'GET':
         feeds = Feed.objects.filter(author_id=idx)
+        customizings = Customizing.objects.filter(author_id=idx)
         profile_sz = ProfileSerializer(profile)
 
         profile_info = {
@@ -212,14 +213,13 @@ def profile_load(request, idx):
         }
 
         feed_list = FeedSerializer(feeds, many=True)
+        customizing_list = CustomizingSerializer(customizings, many=True)
 
-        custom_list = {
-
-        }
-
+        custom_list = customizing_list.data
+        
         return_dict = {
             'profile_info': profile_info,
-            'feed_list': feed_list.data,
+            # 'feed_list': feed_list.data,
             'custom_list': custom_list
         }
 
