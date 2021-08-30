@@ -18,9 +18,9 @@ class Feed(models.Model):
     id = models.AutoField(db_column='id', primary_key=True)
     title = models.CharField(max_length=100)
     content = models.TextField()
-    # feed_type = models.IntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-
+    group_idx = models.IntegerField()
+    
     def __str__(self):
         return self.title
 
@@ -48,3 +48,4 @@ class Like(models.Model):
 class HashTag(models.Model):
     feed = models.ForeignKey('Feed', related_name='tag', on_delete=models.CASCADE)
     tag = models.CharField(max_length=100)
+
