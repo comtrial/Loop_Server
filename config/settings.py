@@ -29,9 +29,13 @@ INSTALLED_APPS = [
     'feed_api.apps.FeedApiConfig',
     'notice_api.apps.NoticeApiConfig',
     'user_api.apps.UserApiConfig',
+<<<<<<< HEAD
     'group_api.apps.GroupApiConfig',
     'notification_api.apps.NotificationApiConfig',
     
+=======
+
+>>>>>>> 0b7a175175535f69529c38252565f8e1220f67a2
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
@@ -44,14 +48,14 @@ REST_FRAMEWORK = {
 
     # Web Test 때문에 꺼놈
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.TokenAuthentication'
     ],
 
 
     # 'DEFAULT_PERMISSION_CLASSES': [
     #     'rest_framework.permissions.IsAuthenticated',
     # ]
-     
+
 }
 
 SWAGGER_SETTINGS = {
@@ -69,7 +73,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    #'django.middleware.csrf.CsrfViewMiddleware',
+    # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -102,18 +106,17 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        
+
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'susan_group_api',
-        # 'NAME': 'practice',
+        # 'NAME': 'jjo3ys',
+        'NAME': 'for_profile',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',
         'HOST': 'dual-life-instance.cezrhtu6o4hr.ap-northeast-2.rds.amazonaws.com',
         'PORT': '3306',
-        
+
     }
 }
-
 
 
 # Password validation
@@ -179,9 +182,10 @@ AWS_ACCESS_KEY_ID = S3['access_key']
 AWS_SECRET_ACCESS_KEY = S3['secret_key']
 AWS_REGION = 'ap-northeast-2'
 AWS_STORAGE_BUCKET_NAME = 'loopus'
-AWS_S3_CUSTOM_DOMAIN = '%s.s3.%s.amazonaws.com' % (AWS_STORAGE_BUCKET_NAME,AWS_REGION)
+AWS_S3_CUSTOM_DOMAIN = '%s.s3.%s.amazonaws.com' % (
+    AWS_STORAGE_BUCKET_NAME, AWS_REGION)
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 1024000000 # value in bytes 1GB here
+DATA_UPLOAD_MAX_MEMORY_SIZE = 1024000000  # value in bytes 1GB here
 FILE_UPLOAD_MAX_MEMORY_SIZE = 1024000000
 
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'

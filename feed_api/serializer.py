@@ -68,7 +68,7 @@ class FeedSerializer(serializers.ModelSerializer):
         model = Feed
         fields = ['id', 'username', 'title', 'tag', 'created_at', 'content', 'feed_image', 'feed_comment', 'like', 'group_idx']
  
-    def get_username_from_author(self, feed):   
+    def get_username_from_author(self, feed):  
         username = feed.author.username
         return username 
     
