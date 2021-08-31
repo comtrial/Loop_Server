@@ -11,5 +11,8 @@ urlpatterns = [
     path('delete/<type>/<idx>/', views.delete),
     path('update/<type>/<idx>/', views.update),
     path('comment_upload/<idx>/', views.comment_upload),
-    path('cocomment_upload/<idx>/', views.cocomment_upload)
+    path('cocomment_upload/<idx>/', views.cocomment_upload),
+
+
+    path('upload_feed/<feed_type>', views.upload),
 ]

@@ -11,6 +11,7 @@ django-storages = "*"
 jwt = "*"
 pyjwt = "*"
 django-cors-headers = "*"
+drf-yasg = "*"
 
 [dev-packages]
 pylint = "*"
