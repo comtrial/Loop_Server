@@ -46,7 +46,6 @@ def like(request, type, idx):
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
 def upload(request):
-    print(request.data)
         
     if request.method == "POST":
 
@@ -268,3 +267,7 @@ def detail_load(request, idx):
             pass
 
         return Response(return_dict)    
+
+# print(type(request.data['profile']))
+#     for data in eval(request.data['profile']):
+#         print(data)
