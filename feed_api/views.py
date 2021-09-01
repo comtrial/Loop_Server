@@ -55,7 +55,8 @@ def upload(request):
             user = request.user
             feed = Feed(author=user)
             data = {'title': request.data['title'],
-                    'content': request.data['content']}
+                    'content': request.data['content'],
+                    'group_idx': user.department}####추후에 변경 꼭 필시!! 변경!!!!
             feed_sz = FeedSerializer(feed, data=data)
 
         except:
@@ -76,12 +77,16 @@ def upload(request):
         except:
             return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
 
-        for tag in request.data['hashtag'].split('#'):
-            if tag != '':
-                tag_sz = HashTagSerializer(
-                    data={'feed': feed_sz.data['id'], 'tag': tag})
-                if tag_sz.is_valid():
-                    tag_sz.save()
+        try:
+            for tag in request.data['hashtag'].split('#'):
+                if tag != '':
+                    tag_sz = HashTagSerializer(
+                        data={'feed': feed_sz.data['id'], 'tag': tag})
+                    if tag_sz.is_valid():
+                        tag_sz.save()
+        
+        except:
+            pass
 
         feed = Feed.objects.get(pk=feed_sz.data['id'])
         feed_sz = FeedSerializer(feed)
