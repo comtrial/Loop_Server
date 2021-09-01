@@ -43,8 +43,8 @@ def signup_checkemail(request):
     if request.method == "POST":
 
         data = request.data
-        username = data['username']
         email = data['email']
+        username = email
         password = data['password']
         department = data['department']
 
