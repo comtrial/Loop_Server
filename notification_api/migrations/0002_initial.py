@@ -10,14 +10,19 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('notice_api', '0001_initial'),
+        ('notification_api', '0001_initial'),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='notice',
+            model_name='notification',
             name='author',
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
+        ),
+        migrations.AddField(
+            model_name='notification',
+            name='to',
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='to', to=settings.AUTH_USER_MODEL),
         ),
     ]

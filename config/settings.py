@@ -13,7 +13,7 @@ SECRET_KEY = '*$32aaojr$%15egbonqy@aoo(ket!zt7j2z_zqgby1yqk$wid&'
 DEBUG = True
 ALLOWED_HOSTS = ["*"]
 # ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'x.x.x.x']
-#ALLOWED_HOSTS = ['52.79.75.189']
+
 
 
 # Application definition
@@ -29,10 +29,12 @@ INSTALLED_APPS = [
     'feed_api.apps.FeedApiConfig',
     'notice_api.apps.NoticeApiConfig',
     'user_api.apps.UserApiConfig',
-
+    'group_api.apps.GroupApiConfig',
+    'notification_api.apps.NotificationApiConfig',
+    
     'rest_framework',
     'rest_framework.authtoken',
-
+    'corsheaders',
     'drf_yasg',
 
     'storages'
@@ -73,7 +75,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_ALLOW_CREDENTIALS = False
+CORS_ALLOW_CREDENTIALS = True
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -102,7 +104,7 @@ DATABASES = {
     'default': {
 
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'jjo3ys',
+        'NAME': 'main',
         # 'NAME': 'for_profile',
         'USER': 'dual_life',
         'PASSWORD': 'dual_life',
