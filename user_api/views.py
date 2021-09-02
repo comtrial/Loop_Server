@@ -217,6 +217,15 @@ def profile_load(request, idx):
 
         custom_list = customizing_list.data
         
+        for one_custom in custom_list:
+            if one_custom["type"] == "feed":
+                feed_num = int(one_custom["contents"])
+                corres_feed = Feed.objects.get(id=feed_num)
+                feed = FeedSerializer(corres_feed)
+                one_custom["contents"] = feed.data
+
+
+
         return_dict = {
             'profile_info': profile_info,
             # 'feed_list': feed_list.data,
