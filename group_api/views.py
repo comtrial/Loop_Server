@@ -1,8 +1,10 @@
+from json.decoder import JSONDecoder
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from .serializers import GroupSerializer, CrewSerializer
 from .models import  Group, Crew
 from user_api.models import UserCustom
+import json
 
 from rest_framework import status
 from rest_framework.status import HTTP_201_CREATED, HTTP_202_ACCEPTED, HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT
@@ -88,9 +90,15 @@ def create_crew(request, group_idx):
 def read_group(request, group_idx):
 
     group = Group.objects.get(id = group_idx)
-    group_sz = GroupSerializer(group)
-
-
-    return Response(group_sz.data, status=HTTP_201_CREATED)
     
- 
+    group_sz = GroupSerializer(group)
+    res_dict = group_sz.data
+
+    # 그룹장이면
+    if group.group_leader.id == request.user.id:
+        print("group_sz.data", group_sz.data)
+        res_dict = json.JSONDecoder().decode(json.JSONEncoder().encode(group_sz.__dict__['_data']))
+        res_dict['is_author'] = '1'
+
+    return Response(res_dict, status=HTTP_201_CREATED)
+    
