@@ -1,7 +1,7 @@
 from json.decoder import JSONDecoder
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from .serializers import GroupSerializer, CrewSerializer
+from .serializers import GroupImageSerializer, GroupSerializer, CrewSerializer
 from .models import  Group, Crew, GroupImage
 from user_api.models import UserCustom
 import json
@@ -103,7 +103,30 @@ def read_group(request, group_idx):
 
     return Response(res_dict, status=HTTP_201_CREATED)
     
+    
 
+
+# Create your views here.
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+def read_all_groups(request):
+    
+
+    try:
+        groups = Group.objects.all()
+    except Group.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        group_sz = GroupSerializer(groups, many=True)
+        print(group_sz.data)
+        
+
+
+
+    return Response(group_sz.data, status=HTTP_201_CREATED)
+    
+    
 
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
