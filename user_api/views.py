@@ -1,3 +1,4 @@
+from group_api.models import Group
 from django.http import response
 from rest_framework.decorators import parser_classes
 from rest_framework.views import APIView
@@ -6,8 +7,10 @@ import json
 from django.contrib.auth.models import User
 from .serializers import UserCustomSerializer, ProfileSerializer, Customizing_imgs_Serializer, CustomizingSerializer
 from feed_api.serializer import FeedSerializer
+from group_api.serializers import CrewSerializer, GroupSerializer
 from .models import Customizing, Customizing_imgs, UserCustom, Profile
 from feed_api.models import Feed
+from group_api.models import Group, Crew
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import MultiPartParser
@@ -216,7 +219,7 @@ def profile_load(request, idx):
         customizing_list = CustomizingSerializer(customizings, many=True)
 
         custom_list = customizing_list.data
-        
+
         for one_custom in custom_list:
             if one_custom["type"] == "feed":
                 feed_num = int(one_custom["contents"])
@@ -224,11 +227,26 @@ def profile_load(request, idx):
                 feed = FeedSerializer(corres_feed)
                 one_custom["contents"] = feed.data
 
+        crews = Crew.objects.filter(crew=idx)
+        crew_sz = CrewSerializer(crews, many=True)
+        group_id_list = []
+        group_list = []
+        for i in crew_sz.data:
+            group_id_list.append(i['group'])
 
+        for i in group_id_list:
+            group = Group.objects.get(pk=i)
+            group_sz = GroupSerializer(group)
+            group_info = group_sz.data
+            del group_info['crew']
+            group_list.append(group_info)
+        # group_list = ''.join(group_list)
+        # group_list = ''.join(map(str, group_list))
 
         return_dict = {
             'profile_info': profile_info,
             # 'feed_list': feed_list.data,
+            'group_list': group_list,
             'custom_list': custom_list
         }
 
@@ -237,6 +255,7 @@ def profile_load(request, idx):
             return_dict = {
                 'profile_info': profile_info,
                 'feed_list': feed_list.data,
+                'group_list': group_list,
                 'custom_list': custom_list,
                 'is_author': '1'
             }
