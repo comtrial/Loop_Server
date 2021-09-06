@@ -96,6 +96,7 @@ def read_group(request, group_idx):
 
     # 그룹장이면
     if group.group_leader.id == request.user.id:
+        # 출력을 안하면 오류발생
         print("group_sz.data", group_sz.data)
         res_dict = json.JSONDecoder().decode(json.JSONEncoder().encode(group_sz.__dict__['_data']))
         res_dict['is_author'] = '1'
