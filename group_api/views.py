@@ -2,7 +2,7 @@ from json.decoder import JSONDecoder
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from .serializers import GroupSerializer, CrewSerializer
-from .models import  Group, Crew
+from .models import  Group, Crew, GroupImage
 from user_api.models import UserCustom
 import json
 
@@ -103,3 +103,38 @@ def read_group(request, group_idx):
 
     return Response(res_dict, status=HTTP_201_CREATED)
     
+
+
+@api_view(['POST', ])
+@permission_classes((IsAuthenticated,))
+def group_profile_update(request, idx):
+    group = Group.objects.get(id = idx)
+    if group.group_leader.id == request.user.id:
+        try:
+            print('드루와~~')
+            group = Group.objects.get(id=idx)
+            print('드루와~~1')
+            # group_img = GroupImage.objects.get(image=idx)
+            print('드루와~~2')
+
+            group.group_name = request.data['group_name']
+            print('드루와~~3')
+            group.group_description = request.data['group_description']
+
+            print('드루와~~4')
+            # group_img.profile_image = request.data['image']
+            print('드루와~~5')
+            
+            group.save()
+            print('드루와~~')
+            return_dict = {
+                'Update Completed'
+            }
+            return Response(return_dict)
+        except Group.DoesNotExist:
+            return Response('Request is not valid.', status=status.HTTP_404_NOT_FOUND)
+    else:
+        return_dict = {
+            'message': ['No permission to modify.']
+        }
+        return Response(return_dict, status=status.HTTP_401_UNAUTHORIZED)
