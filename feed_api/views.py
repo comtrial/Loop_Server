@@ -17,7 +17,8 @@ from rest_framework.authtoken.models import Token
 # to custom serilizer
 from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer, CocommentSerializer, UserProfileSerializer
 
-# UPLOAD
+# to notification 
+import notification_api.views as notification_api
 
 
 @api_view(['POST', ])
@@ -109,6 +110,7 @@ def comment_upload(request, idx):
 
     if comment_sz.is_valid():
         comment_sz.save()
+        notification_api.create_feed_notification(request, idx, 'comment')
     else:
 
         return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
@@ -131,6 +133,7 @@ def cocomment_upload(request, idx):
 
     if comment_sz.is_valid():
         comment_sz.save()
+        notification_api.create_feed_notification(request, idx, 'comment')
     else:
 
         return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
