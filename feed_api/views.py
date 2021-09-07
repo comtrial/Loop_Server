@@ -1,6 +1,8 @@
 from django.db.models.query import QuerySet
 from django.shortcuts import render
+from rest_framework.utils.serializer_helpers import ReturnDict
 from .models import Feed, FeedImage, Comment, Like, HashTag, Cocomment
+from user_api.models import Profile
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 
@@ -13,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 
 # to custom serilizer
-from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer, CocommentSerializer
+from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer, CocommentSerializer, UserProfileSerializer
 
 # UPLOAD
 
@@ -64,8 +66,9 @@ def upload(request):
 
         if feed_sz.is_valid():
             feed_sz.save()
-        else:
 
+        else:
+            
             return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -88,10 +91,7 @@ def upload(request):
         except:
             pass
 
-        feed = Feed.objects.get(pk=feed_sz.data['id'])
-        feed_sz = FeedSerializer(feed)
-
-        return Response(feed_sz.data, status=status.HTTP_201_CREATED)
+        return Response('업로드 완료', status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST', ])
@@ -161,7 +161,7 @@ def update(request, type, idx):
 
         feed_sz = FeedSerializer(feed)
 
-        return Response(feed_sz.data, status=status.HTTP_202_ACCEPTED)
+        return Response('피드 업데이트 완료', status=status.HTTP_202_ACCEPTED)
 
     if type == 'comment':
         comment = Comment.objects.get(pk=idx)
@@ -228,6 +228,12 @@ def home_load(request):
         # 페이징처리
         serializer = FeedSerializer(page_obj, many=True)
         for data in serializer.data:
+            profile = Profile.objects.get(author_id = data['author_id'])
+            profile_sz = UserProfileSerializer(data = {'profile_image':profile.profile_image, 'nickname':profile.nickname})
+            if profile_sz.is_valid():
+                print(profile_sz.data)
+                data.update({'profile':profile_sz.data})
+
             try:
                 liked = Like.objects.get(
                     feed_id=data['id'], author_id=request.user.id)
