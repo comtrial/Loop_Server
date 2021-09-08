@@ -32,7 +32,8 @@ class GroupImageSerializer(serializers.ModelSerializer):
 
 
 class GroupSerializer(serializers.ModelSerializer):
-
+    
+    group_image = GroupImageSerializer(read_only=True)
     crew = CrewSerializer(many = True, read_only = True)
     # group_image = GroupImageSerializer(read_only = True)
 
