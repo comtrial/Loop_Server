@@ -6,15 +6,21 @@ from rest_framework import serializers
 
 class CrewSerializer(serializers.ModelSerializer):
 
-    # group_name = serializers.SerializerMethodField('get_groupname_from_author')
-
+    crewname = serializers.SerializerMethodField('get_userInfo')
     class Meta:
         model = Crew
-        fields = ['crew', 'group']
+        fields = ['crew', 'crewname','group']
     
-    # def get_groupname_from_author(self, group):   
-    #     group_name = group.group_name
-    #     return group_name 
+    def get_userInfo(self, crew):
+        
+        username = crew.crew.username 
+        return username
+
+    def get_userProfile(self, crew):
+        
+        userProfile = crew.crew.username 
+
+        return username
 
 
 class GroupImageSerializer(serializers.ModelSerializer):

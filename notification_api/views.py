@@ -59,7 +59,6 @@ def create_feed_notification(request, feed_idx, notification_type):
 
         notification_sz = NotificationSerializer(notification)
 
-        return Response(notification_sz.data, status= status.HTTP_201_CREATED)
 
     except:
         return Response('없는 그룹입니다..', status = status.HTTP_404_NOT_FOUND)
