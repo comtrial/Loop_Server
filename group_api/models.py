@@ -19,6 +19,7 @@ class GroupImage(models.Model):
     image = models.ImageField(null=True)
 
 class Crew(models.Model):
+
     crew = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     group = models.ForeignKey('Group', related_name='crew',on_delete=models.CASCADE)
 
