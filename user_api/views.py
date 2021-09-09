@@ -111,7 +111,7 @@ def signup(request):
     if request.method == "POST":
 
         data = request.data
-        username = data['username']
+        username = data['email']
         # email = data['email']
         # password = data['password']
         # department = data['department']
