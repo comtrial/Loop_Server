@@ -1,6 +1,7 @@
 from django.db.models.fields import files
 from .models import Feed, FeedImage, Comment, Like, HashTag, Cocomment
 from rest_framework import serializers
+from user_api.models import Profile
 
 # for group feed
 from group_api.models import Group
@@ -49,11 +50,17 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'feed', 'username', 'content', 'created_at', 'like', 'cocomment']
+        fields = ['id', 'feed', 'username', 'content', 'created_at', 'like', 'cocomment', 'author_id']
     
     def get_username_from_author(self, comment):   
         username = comment.author.username
         return username 
+
+class UserProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = ['profile_image', 'nickname']
 
 class FeedSerializer(serializers.ModelSerializer):
 
@@ -66,7 +73,7 @@ class FeedSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Feed
-        fields = ['id', 'username', 'title', 'tag', 'created_at', 'content', 'feed_image', 'feed_comment', 'like', 'group_idx']
+        fields = ['id', 'author_id', 'username', 'title', 'tag', 'created_at', 'content', 'feed_image', 'feed_comment', 'like', 'group_idx']
  
     def get_username_from_author(self, feed):  
         username = feed.author.username

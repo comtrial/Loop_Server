@@ -24,6 +24,7 @@ from django.contrib.auth import authenticate
 def create_group(request):
     leader = request.user
 
+    print(request.data['group_name'])
     # 그루비룸 중복 체크
     try:
         duplicate = Group.objects.get(group_name=request.data['group_name'])
@@ -41,24 +42,17 @@ def create_group(request):
 
         group_sz = GroupSerializer(group)
 
-        crew = UserCustom.objects.get(id=request.user.id)
-        group = Group.objects.get(id=group_sz.data['id'])
+        try:
+            for image in request.FILES.getlist('image'):
+                image_sz = GroupImageSerializer(data={'group': group.id, 'image': request.FILES['image']})
+                if image_sz.is_valid():
+                    image_sz.save()
 
-        crew = Crew(crew=crew, group=group)
-        crew.save()
+        except:
+            return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
 
         return Response(group_sz.data, status=HTTP_201_CREATED)
 
-        # group = Group(group_leader = leader)
-        # group_sz = GroupSerializer(data={'group_leader': leader.id ,'group_name': request.data['group_name'], 'group_description': request.data['group_description']})
-
-        # if group_sz.is_valid():
-        #     group_sz.save()
-
-        #     return Response(group_sz.data)
-
-        # else:
-        #     return Response('유효하지 않은 형식입니다.', status = status.HTTP_403_FORBIDDEN)
 
 # Create your views here.
 

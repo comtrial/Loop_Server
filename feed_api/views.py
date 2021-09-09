@@ -1,6 +1,8 @@
 from django.db.models.query import QuerySet
 from django.shortcuts import render
+from rest_framework.utils.serializer_helpers import ReturnDict
 from .models import Feed, FeedImage, Comment, Like, HashTag, Cocomment
+from user_api.models import Profile
 from django.core.paginator import Paginator
 from django.http import HttpResponse
 
@@ -13,7 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 
 # to custom serilizer
-from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer, CocommentSerializer
+from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer, CocommentSerializer, UserProfileSerializer
 
 # to notification 
 import notification_api.views as notification_api
@@ -65,8 +67,9 @@ def upload(request):
 
         if feed_sz.is_valid():
             feed_sz.save()
-        else:
 
+        else:
+            
             return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
 
         try:
@@ -89,10 +92,7 @@ def upload(request):
         except:
             pass
 
-        feed = Feed.objects.get(pk=feed_sz.data['id'])
-        feed_sz = FeedSerializer(feed)
-
-        return Response(feed_sz.data, status=status.HTTP_201_CREATED)
+        return Response('업로드 완료', status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST', ])
@@ -164,7 +164,7 @@ def update(request, type, idx):
 
         feed_sz = FeedSerializer(feed)
 
-        return Response(feed_sz.data, status=status.HTTP_202_ACCEPTED)
+        return Response('피드 업데이트 완료', status=status.HTTP_202_ACCEPTED)
 
     if type == 'comment':
         comment = Comment.objects.get(pk=idx)
@@ -232,11 +232,14 @@ def home_load(request):
         serializer = FeedSerializer(page_obj, many=True)
         for data in serializer.data:
             try:
-                liked = Like.objects.get(
-                    feed_id=data['id'], author_id=request.user.id)
-                data.update({'feed_liked': 1})
-            except:
-                pass
+                profile = Profile.objects.get(author_id = data['author_id'])
+                profile_sz = UserProfileSerializer(profile)
+                data.update({'profile_image':profile_sz.data['profile_image'],
+                             'nickname':profile_sz.data['nickname']})
+            
+            except:#승원 계정이 superuser라 프로필이 없어서 생기는 오류를 방지하기위한 try catch구문
+                data.update({'profile_image':[],
+                             'nickname':[]})
 
             if data['username'] == request.user.username:
                 data.update({'is_author': 1})
@@ -263,8 +266,16 @@ def detail_load(request, idx):
 
         for comment in serializer.data['feed_comment']:
             try:
-                liked = Like.objects.get(
-                    comment_id=comment['id'], author_id=request.user.id)
+                profile = Profile.objects.get(author_id = comment['author_id'])
+                profile_sz = UserProfileSerializer(profile)
+                comment.update({'profile_image':profile_sz.data['profile_image'],
+                                'nickname':profile_sz.data['nickname']})
+            except:#승원 계정이 superuser라 프로필이 없어서 생기는 오류를 방지하기위한 try catch구문
+                comment.update({'profile_image':[],
+                                'nickname':[]})
+            
+            try:
+                liked = Like.objects.get(comment_id=comment['id'], author_id=request.user.id)
                 comment.update({'comment_liked': 1})
             except:
                 pass
