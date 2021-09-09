@@ -268,22 +268,38 @@ def profile_load(request, idx):
 def profile_update(request, prof_type, idx):
     if str(request.user.id) == idx:
         try:
-            if prof_type == 'profile_info':
+            if prof_type == 'profile_info_picture':
                 try:
                     profile = Profile.objects.get(author=idx)
                     profile.profile_image = request.data['image']
-                    profile.nickname = request.data['nickname']
-                    profile.real_name = request.data['real_name']
-                    profile.class_num = request.data['class_num']
-                    profile.grade = request.data['grade']
-                    # feed.content = request.data['content']
                     profile.save()
+
+                    profile = Profile.objects.get(author=idx)
+                    profile_sz = ProfileSerializer(profile)
+                    
                     return_dict = {
-                        'Update Completed'
+                        "profile_image": profile_sz.data['profile_image']
                     }
                     return Response(return_dict)
                 except Profile.DoesNotExist:
-                    return Response('Request is not valid.', status=status.HTTP_404_NOT_FOUND)
+                    return Response('Profile data is not valid', status=status.HTTP_404_NOT_FOUND)
+
+            elif prof_type == 'profile_info_context':
+                try:
+                    profile = Profile.objects.get(author=idx)
+
+                    profile_sz = ProfileSerializer(profile, data = {
+                        'nickname': request.data['nickname'],
+                        'real_name': request.data['real_name'],
+                        'class_num': request.data['class_num'],
+                        'grade': request.data['grade']
+                    })
+                    profile_sz.is_valid()
+                    profile_sz.save()
+                    print('Update Completed')
+                    return Response(profile_sz.data)
+                except Profile.DoesNotExist:
+                    return Response('Profile data is not valid', status=status.HTTP_404_NOT_FOUND)
 
             elif prof_type == 'customizing':
 
