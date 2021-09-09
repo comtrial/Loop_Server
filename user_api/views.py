@@ -229,13 +229,10 @@ def profile_load(request, idx):
 
         crews = Crew.objects.filter(crew=idx)
         crew_sz = CrewSerializer(crews, many=True)
-        group_id_list = []
+
         group_list = []
         for i in crew_sz.data:
-            group_id_list.append(i['group'])
-
-        for i in group_id_list:
-            group = Group.objects.get(pk=i)
+            group = Group.objects.get(pk=i['group'])
             group_sz = GroupSerializer(group)
             group_info = group_sz.data
             del group_info['crew']

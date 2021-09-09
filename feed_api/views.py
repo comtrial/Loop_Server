@@ -241,6 +241,12 @@ def home_load(request):
                 data.update({'profile_image':None,
                              'nickname':None})
 
+            try:
+                liked = Like.objects.get(feed_id=data['id'], author_id=request.user.id)
+                data.update({'feed_liked':1})
+            except:
+                pass
+            
             if data['username'] == request.user.username:
                 data.update({'is_author': 1})
 
