@@ -1,3 +1,4 @@
+from group_api.models import Group
 from django.http import response
 from rest_framework.decorators import parser_classes
 from rest_framework.views import APIView
@@ -6,8 +7,10 @@ import json
 from django.contrib.auth.models import User
 from .serializers import UserCustomSerializer, ProfileSerializer, Customizing_imgs_Serializer, CustomizingSerializer
 from feed_api.serializer import FeedSerializer
+from group_api.serializers import CrewSerializer, GroupSerializer
 from .models import Customizing, Customizing_imgs, UserCustom, Profile
 from feed_api.models import Feed
+from group_api.models import Group, Crew
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.parsers import MultiPartParser
@@ -216,7 +219,7 @@ def profile_load(request, idx):
         customizing_list = CustomizingSerializer(customizings, many=True)
 
         custom_list = customizing_list.data
-        
+
         for one_custom in custom_list:
             if one_custom["type"] == "feed":
                 feed_num = int(one_custom["contents"])
@@ -224,11 +227,26 @@ def profile_load(request, idx):
                 feed = FeedSerializer(corres_feed)
                 one_custom["contents"] = feed.data
 
+        crews = Crew.objects.filter(crew=idx)
+        crew_sz = CrewSerializer(crews, many=True)
+        group_id_list = []
+        group_list = []
+        for i in crew_sz.data:
+            group_id_list.append(i['group'])
 
+        for i in group_id_list:
+            group = Group.objects.get(pk=i)
+            group_sz = GroupSerializer(group)
+            group_info = group_sz.data
+            del group_info['crew']
+            group_list.append(group_info)
+        # group_list = ''.join(group_list)
+        # group_list = ''.join(map(str, group_list))
 
         return_dict = {
             'profile_info': profile_info,
             # 'feed_list': feed_list.data,
+            'group_list': group_list,
             'custom_list': custom_list
         }
 
@@ -237,6 +255,7 @@ def profile_load(request, idx):
             return_dict = {
                 'profile_info': profile_info,
                 'feed_list': feed_list.data,
+                'group_list': group_list,
                 'custom_list': custom_list,
                 'is_author': '1'
             }
@@ -249,26 +268,42 @@ def profile_load(request, idx):
 def profile_update(request, prof_type, idx):
     if str(request.user.id) == idx:
         try:
-            if prof_type == 'profile_info':
+            if prof_type == 'profile_info_picture':
                 try:
                     profile = Profile.objects.get(author=idx)
                     profile.profile_image = request.data['image']
-                    profile.nickname = request.data['nickname']
-                    profile.real_name = request.data['real_name']
-                    profile.class_num = request.data['class_num']
-                    profile.grade = request.data['grade']
-                    # feed.content = request.data['content']
                     profile.save()
+
+                    profile = Profile.objects.get(author=idx)
+                    profile_sz = ProfileSerializer(profile)
+                    
                     return_dict = {
-                        'Update Completed'
+                        "profile_image": profile_sz.data['profile_image']
                     }
                     return Response(return_dict)
                 except Profile.DoesNotExist:
-                    return Response('Request is not valid.', status=status.HTTP_404_NOT_FOUND)
+                    return Response('Profile data is not valid', status=status.HTTP_404_NOT_FOUND)
+
+            elif prof_type == 'profile_info_context':
+                try:
+                    profile = Profile.objects.get(author=idx)
+
+                    profile_sz = ProfileSerializer(profile, data = {
+                        'nickname': request.data['nickname'],
+                        'real_name': request.data['real_name'],
+                        'class_num': request.data['class_num'],
+                        'grade': request.data['grade']
+                    })
+                    profile_sz.is_valid()
+                    profile_sz.save()
+                    print('Update Completed')
+                    return Response(profile_sz.data)
+                except Profile.DoesNotExist:
+                    return Response('Profile data is not valid', status=status.HTTP_404_NOT_FOUND)
 
             elif prof_type == 'customizing':
 
-                cum_val = 0
+                # cum_val = 0
 
                 customizing = Customizing.objects.filter(author_id=idx)
                 customizing.delete()
@@ -280,15 +315,16 @@ def profile_update(request, prof_type, idx):
                     param_data = request.data['customizing_data']
                     req_list = json.JSONDecoder().decode(param_data)
                     return_list = []
+                    i = 0
                     for line in req_list:
-                        customizing_model = Customizing(author=request.user)
-                        customizing_sz = CustomizingSerializer(customizing_model, data={
-                            'type': line['type'],
-                            'contents': line['contents'],
-                            'seq_id': line['id']
-                        })
 #############################################################################################################################
                         if line['type'] == 'title' or line['type'] == 'content':
+                            customizing_model = Customizing(author=request.user)
+                            customizing_sz = CustomizingSerializer(customizing_model, data={
+                                'type': line['type'],
+                                'contents': line['contents'],
+                                'seq_id': line['id']
+                        })
                             if customizing_sz.is_valid():
                                 customizing_sz.save()
 
@@ -303,54 +339,73 @@ def profile_update(request, prof_type, idx):
                                 }
                             )
 
-                            print('text updated')
-
 #############################################################################################################################
-                        elif line['type'] == 'image':
+                        elif line['type'] == 'imageURL':
+                            customizing_model = Customizing(author=request.user)
+                            customizing_sz = CustomizingSerializer(customizing_model, data={
+                                'type': line['type'],
+                                'contents': line['contents'],
+                                'seq_id': line['id']
+                        })
                             if customizing_sz.is_valid():
                                 customizing_sz.save()
                             else:
                                 return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
 
                             try:
-
-                                start_num = cum_val
-                                end_num = start_num + line['contents']
-                                cum_val = end_num
-
-                                pointed_list = request.FILES.getlist(
-                                    'image')[start_num:end_num]
-
-                                image_list = []
-                                for image in pointed_list:
-                                    try:
-                                        custom_model = Customizing_imgs(
-                                            author=request.user)
-                                    except:
-                                        return Response('없는 사용자입니다.', status=status.HTTP_404_NOT_FOUND)
-                                    customizing_imgs_sz = Customizing_imgs_Serializer(
-                                        custom_model, data={'customizing': customizing_sz.data['id'], 'image': image})
-                                    if customizing_imgs_sz.is_valid():
-                                        customizing_imgs_sz.save()
-                                        print("customizing_imgs_sz:",
-                                              customizing_imgs_sz)
-                                        image_list.append(
-                                            customizing_imgs_sz.data['image'])
-                                    else:
-                                        print("데이터가 저장되지 않았습니다.")
-
                                 return_list.append(
                                     {
                                         "id": customizing_sz.data['seq_id'],
                                         "type": customizing_sz.data['type'],
-                                        "contents": image_list,
+                                        "contents": customizing_sz.data['contents'],
                                     }
                                 )
 
                             except:
-                                return Response('유효하지 않은 image 형식입니다.', status=status.HTTP_403_FORBIDDEN)
+                                return Response('Error', status=status.HTTP_403_FORBIDDEN)
+#############################################################################################################################
+                        elif line['type'] == 'imageFILE':
+                            customizing_model = Customizing(author=request.user)
+                            customizing_sz = CustomizingSerializer(customizing_model, data={
+                                'type': line['type'],
+                                'contents': line['contents'],
+                                'seq_id': line['id']
+                        })
+                            if customizing_sz.is_valid():
+                                customizing_sz.save()
+                            else:
+                                return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
+
+                            req_image_data = request.FILES.getlist('image')[i]
+                            i = i + 1
+                            try:
+                                custom_model = Customizing_imgs(author=request.user)
+                            except:
+                                return Response('없는 사용자입니다.', status=status.HTTP_404_NOT_FOUND)
+                            customizing_imgs_sz = Customizing_imgs_Serializer(
+                                custom_model, data={'customizing': customizing_sz.data['id'], 'image': req_image_data})
+                            try:
+                                if customizing_imgs_sz.is_valid():
+                                    customizing_imgs_sz.save()
+                                else:
+                                    print("데이터가 저장되지 않았습니다.")
+                                return_list.append(
+                                    {
+                                        "id": customizing_sz.data['seq_id'],
+                                        "type": customizing_sz.data['type'],
+                                        "contents": customizing_imgs_sz.data['image'],
+                                    }
+                                )
+                            except:
+                                return Response('유효하지 않은 image 형식입니다.??', status=status.HTTP_403_FORBIDDEN)
 #############################################################################################################################
                         elif line['type'] == 'feed':
+                            customizing_model = Customizing(author=request.user)
+                            customizing_sz = CustomizingSerializer(customizing_model, data={
+                                'type': line['type'],
+                                'contents': line['contents'],
+                                'seq_id': line['id']
+                        })
                             try:
                                 if customizing_sz.is_valid():
                                     customizing_sz.save()
@@ -360,13 +415,11 @@ def profile_update(request, prof_type, idx):
                                 feed = Feed.objects.get(
                                     id=customizing_sz.data['contents'])
                                 serializer = FeedSerializer(feed)
-                                print(serializer.data)
                                 # return_dict = {}
                                 # return_dict.update(serializer.data)
 
                             except Feed.DoesNotExist:
                                 return Response(status=status.HTTP_404_NOT_FOUND)
-                            print('feed updated')
 
                             return_list.append(
                                 {
@@ -375,14 +428,6 @@ def profile_update(request, prof_type, idx):
                                     "contents": serializer.data,
                                 }
                             )
-                    print("return_list:", return_list)
-                    # return_dict = {}
-                    # for one_line in return_list:
-                    #     return_dict.update(one_line)
-                    # return_dict = {
-                    #     return_list
-                    # }
-
                     return Response(return_list)
 
                 except Profile.DoesNotExist:
