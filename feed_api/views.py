@@ -238,8 +238,8 @@ def home_load(request):
                              'nickname':profile_sz.data['nickname']})
             
             except:#승원 계정이 superuser라 프로필이 없어서 생기는 오류를 방지하기위한 try catch구문
-                data.update({'profile_image':[],
-                             'nickname':[]})
+                data.update({'profile_image':None,
+                             'nickname':None})
 
             if data['username'] == request.user.username:
                 data.update({'is_author': 1})
@@ -271,8 +271,8 @@ def detail_load(request, idx):
                 comment.update({'profile_image':profile_sz.data['profile_image'],
                                 'nickname':profile_sz.data['nickname']})
             except:#승원 계정이 superuser라 프로필이 없어서 생기는 오류를 방지하기위한 try catch구문
-                comment.update({'profile_image':[],
-                                'nickname':[]})
+                comment.update({'profile_image':None,
+                                'nickname':None})
             
             try:
                 liked = Like.objects.get(comment_id=comment['id'], author_id=request.user.id)

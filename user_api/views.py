@@ -108,7 +108,7 @@ def signup(request):
     if request.method == "POST":
 
         data = request.data
-        username = data['username']
+        username = data['email']
         # email = data['email']
         # password = data['password']
         # department = data['department']
@@ -119,33 +119,33 @@ def signup(request):
         # profile information 추가
         # email 인증 됬을 경우
         if user.is_active:
-            try:
-                token = Token.objects.create(user=user)
-                user.save()
-                profile = Profile(author=user)
-                data = {
-                    'nickname': data['nickname'],
-                    'grade': data['grade'],
-                    'class_num': data['class_num'],
-                    'real_name': data['real_name']
-                }
-                profile_sz = ProfileSerializer(profile, data=data)
-                if profile_sz.is_valid():
-                    profile_sz.save()
-                else:
-                    return Response('profile information is not invalid', status=status.HTTP_403_FORBIDDEN)
+            # try:
+            token = Token.objects.create(user=user)
+            user.save()
+            profile = Profile(author=user)
+            data = {
+                'nickname': data['nickname'],
+                'grade': data['grade'],
+                'class_num': data['class_num'],
+                'real_name': data['real_name']
+            }
+            profile_sz = ProfileSerializer(profile, data=data)
+            if profile_sz.is_valid():
+                profile_sz.save()
+            else:
+                return Response('profile information is not invalid', status=status.HTTP_403_FORBIDDEN)
 
-                res_data = {}
-                res_data['message'] = 'login success'
-                res_data['token'] = str(token)
-                res_data['isAuthorization'] = 1
-                # response
-                return Response(res_data)
+            res_data = {}
+            res_data['message'] = 'login success'
+            res_data['token'] = str(token)
+            res_data['isAuthorization'] = 1
+            # response
+            return Response(res_data)
 
-            except:
-                res_data = {}
-                res_data['message'] = '이미 등록된 사용자 입니당..'
-                return Response(res_data)
+            # except:
+            #     res_data = {}
+            #     res_data['message'] = '이미 등록된 사용자 입니당..'
+            #     return Response(res_data)
 
         # email 인증 안됨
         res_data = {}
