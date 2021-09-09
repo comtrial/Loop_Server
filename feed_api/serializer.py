@@ -50,7 +50,7 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['id', 'feed', 'username', 'content', 'created_at', 'like', 'cocomment']
+        fields = ['id', 'feed', 'username', 'content', 'created_at', 'like', 'cocomment', 'author_id']
     
     def get_username_from_author(self, comment):   
         username = comment.author.username

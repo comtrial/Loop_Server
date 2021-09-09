@@ -231,18 +231,15 @@ def home_load(request):
         # 페이징처리
         serializer = FeedSerializer(page_obj, many=True)
         for data in serializer.data:
-            profile = Profile.objects.get(author_id = data['author_id'])
-            profile_sz = UserProfileSerializer(data = {'profile_image':profile.profile_image, 'nickname':profile.nickname})
-            if profile_sz.is_valid():
-                print(profile_sz.data)
-                data.update({'profile':profile_sz.data})
-
             try:
-                liked = Like.objects.get(
-                    feed_id=data['id'], author_id=request.user.id)
-                data.update({'feed_liked': 1})
-            except:
-                pass
+                profile = Profile.objects.get(author_id = data['author_id'])
+                profile_sz = UserProfileSerializer(profile)
+                data.update({'profile_image':profile_sz.data['profile_image'],
+                             'nickname':profile_sz.data['nickname']})
+            
+            except:#승원 계정이 superuser라 프로필이 없어서 생기는 오류를 방지하기위한 try catch구문
+                data.update({'profile_image':[],
+                             'nickname':[]})
 
             if data['username'] == request.user.username:
                 data.update({'is_author': 1})
@@ -269,8 +266,16 @@ def detail_load(request, idx):
 
         for comment in serializer.data['feed_comment']:
             try:
-                liked = Like.objects.get(
-                    comment_id=comment['id'], author_id=request.user.id)
+                profile = Profile.objects.get(author_id = comment['author_id'])
+                profile_sz = UserProfileSerializer(profile)
+                comment.update({'profile_image':profile_sz.data['profile_image'],
+                                'nickname':profile_sz.data['nickname']})
+            except:#승원 계정이 superuser라 프로필이 없어서 생기는 오류를 방지하기위한 try catch구문
+                comment.update({'profile_image':[],
+                                'nickname':[]})
+            
+            try:
+                liked = Like.objects.get(comment_id=comment['id'], author_id=request.user.id)
                 comment.update({'comment_liked': 1})
             except:
                 pass
