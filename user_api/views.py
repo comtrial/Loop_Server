@@ -221,6 +221,7 @@ def profile_load(request, idx):
             'nickname': profile_sz.data['nickname'],
             'real_name': profile_sz.data['real_name'],
             'class_num': profile_sz.data['class_num'],
+            'introduction': profile_sz.data['introduction']
         }
 
         feed_list = FeedSerializer(feeds, many=True)
@@ -297,6 +298,7 @@ def profile_update(request, prof_type, idx):
                         'nickname': request.data['nickname'],
                         'real_name': request.data['real_name'],
                         'class_num': request.data['class_num'],
+                        'introduction': request.data['introduction']
                     })
                     profile_sz.is_valid()
                     profile_sz.save()
