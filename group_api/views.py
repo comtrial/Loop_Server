@@ -44,14 +44,22 @@ def create_group(request):
 
         group_sz = GroupSerializer(group)
 
+        crew = UserCustom.objects.get(id=request.user.id)
+        group = Group.objects.get(id=group_sz.data['id'])
+
+        crew = Crew(crew=crew, group=group)
+        crew.save()
+
         try:
             for image in request.FILES.getlist('image'):
-                image_sz = GroupImageSerializer(data={'group': group.id, 'image': request.FILES['image']})
-                if image_sz.is_valid():
-                    image_sz.save()
-
+                    image_sz = GroupImageSerializer(
+                        data={'group': group.id, 'image': image})
+                    if image_sz.is_valid():
+                        image_sz.save()
+        # except:
+        #     return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
         except:
-            return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
+            pass
 
         return Response(group_sz.data, status=HTTP_201_CREATED)
 
