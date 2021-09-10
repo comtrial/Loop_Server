@@ -38,7 +38,7 @@ from django.utils.encoding import (
 from django.conf.global_settings import SECRET_KEY
 from .department import DEPARTMENT
 import jwt
-
+import time
 
 @api_view(["POST", ])
 def signup_checkemail(request):
@@ -76,10 +76,19 @@ def signup_checkemail(request):
         email = EmailMessage(main_title, message_data, to=[mail_to])
         email.send()
 
-        res_data = {}
-        res_data['message'] = 'login success'
-        # response
-        return Response(res_data)
+        time.sleep(180)
+        user = User.objects.get(pk=user.id)
+
+        if user.is_active:
+            res_data = {}
+            res_data['message'] = 'login success'
+            # response
+            return Response(res_data)
+        
+        else:
+            user.delete()
+
+            return Response({'message': '인증이 만료되었습니다.'})
 
     # http method 가 post 가 아닐 경우
     else:
