@@ -22,6 +22,7 @@ class Profile(models.Model):
     # nickname = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='feed_comment', on_delete=models.CASCADE)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=100, default='user_id')
+    introduction = models.CharField(max_length=100, null=True)
     profile_image = models.ImageField(null=True)
     
     # 혹시 몰라 추가하는 field lists
