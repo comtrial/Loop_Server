@@ -23,8 +23,7 @@ class Profile(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     nickname = models.CharField(max_length=100, default='user_id')
     profile_image = models.ImageField(null=True)
-    grade = models.CharField(max_length=100, default='신입생')
-
+    
     # 혹시 몰라 추가하는 field lists
     class_num = models.CharField(max_length=100)
     real_name = models.CharField(max_length=100)

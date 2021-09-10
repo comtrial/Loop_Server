@@ -13,7 +13,7 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['nickname', 'profile_image',
-                  'grade', 'class_num', 'real_name']
+                  'class_num', 'real_name']
 
 
 class Customizing_imgs_Serializer(serializers.ModelSerializer):

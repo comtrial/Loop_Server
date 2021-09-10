@@ -64,9 +64,10 @@ def signup_checkemail(request):
         # user.save()
 
         # email check
+        user_pk = user.id
         current_site = get_current_site(request)
         domain = current_site.domain
-        uidb64 = urlsafe_base64_encode(force_bytes(user.id))
+        uidb64 = urlsafe_base64_encode(force_bytes(user_pk))
         # token = jwt.encode({'id': user.id}, SECRET_KEY,algorithm='HS256').decode('utf-8')# ubuntu환경
         token = jwt.encode({'id': user.id}, SECRET_KEY, algorithm='HS256')
         message_data = message(domain, uidb64, token)
@@ -76,19 +77,19 @@ def signup_checkemail(request):
         email = EmailMessage(main_title, message_data, to=[mail_to])
         email.send()
 
-        time.sleep(180)
-        user = User.objects.get(pk=user.id)
+        for i in range(6):
+            time.sleep(30)
+            user = User.objects.get(pk=user_pk)
 
-        if user.is_active:
-            res_data = {}
-            res_data['message'] = 'login success'
-            # response
-            return Response(res_data)
+            if user.is_active:
+                res_data = {}
+                res_data['message'] = 'login success'
+
+                return Response(res_data)
         
-        else:
-            user.delete()
+        user.delete()
 
-            return Response({'message': '인증이 만료되었습니다.'})
+        return Response({'message': '인증이 만료되었습니다.'})
 
     # http method 가 post 가 아닐 경우
     else:
@@ -137,7 +138,6 @@ def signup(request):
             profile = Profile(author=user)
             data = {
                 'nickname': data['nickname'],
-                'grade': data['grade'],
                 'class_num': data['class_num'],
                 'real_name': data['real_name']
             }
@@ -221,7 +221,6 @@ def profile_load(request, idx):
             'nickname': profile_sz.data['nickname'],
             'real_name': profile_sz.data['real_name'],
             'class_num': profile_sz.data['class_num'],
-            'grade': profile_sz.data['grade']
         }
 
         feed_list = FeedSerializer(feeds, many=True)
@@ -298,7 +297,6 @@ def profile_update(request, prof_type, idx):
                         'nickname': request.data['nickname'],
                         'real_name': request.data['real_name'],
                         'class_num': request.data['class_num'],
-                        'grade': request.data['grade']
                     })
                     profile_sz.is_valid()
                     profile_sz.save()
