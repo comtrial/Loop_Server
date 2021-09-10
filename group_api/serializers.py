@@ -1,8 +1,14 @@
 from django.db.models import fields
 from .models import  Group, Crew, GroupImage
 from rest_framework import serializers
+from user_api.models import Profile
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Profile
+        fields = ['profile_image', 'nickname']
 
 class CrewSerializer(serializers.ModelSerializer):
 

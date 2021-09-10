@@ -12,6 +12,7 @@ jwt = "*"
 pyjwt = "*"
 django-cors-headers = "*"
 drf-yasg = "*"
+boto3 = "*"
 
 [dev-packages]
 pylint = "*"
