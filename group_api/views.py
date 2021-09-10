@@ -1,7 +1,7 @@
 from json.decoder import JSONDecoder
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from .serializers import GroupImageSerializer, GroupSerializer, CrewSerializer
+from .serializers import GroupImageSerializer, GroupSerializer, CrewSerializer, UserProfileSerializer
 from .models import Group, Crew, GroupImage
 from user_api.models import UserCustom
 import json
@@ -16,6 +16,8 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 
+
+from user_api.models import Profile
 # Create your views here.
 
 
@@ -95,11 +97,25 @@ def read_group(request, group_idx):
 
     group_sz = GroupSerializer(group)
     res_dict = group_sz.data
-
+    
+    # for use profile_image
+    for data in res_dict['crew']:
+        print(data)
+        try:
+            profile = Profile.objects.get(author_id = data['crew'])
+            print(profile.nickname)
+            profile_sz = UserProfileSerializer(profile)
+            print(profile_sz.data['profile_image'])
+            data.update({'profile_image':profile_sz.data['profile_image'],
+                             'nickname':profile_sz.data['nickname']})
+        except:
+            print('sdf')
+            data.update({'profile_image':None,
+                             'nickname':None})
     # 그룹장이면
     if group.group_leader.id == request.user.id:
         # 출력을 안하면 오류발생
-        print("group_sz.data", group_sz.data)
+        # print("group_sz.data", group_sz.data)
         res_dict = json.JSONDecoder().decode(
             json.JSONEncoder().encode(group_sz.__dict__['_data']))
         res_dict['is_author'] = '1'
