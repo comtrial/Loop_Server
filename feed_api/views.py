@@ -20,6 +20,9 @@ from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashT
 # to notification 
 import notification_api.views as notification_api
 
+from group_api.models import Crew
+from group_api.serializers import CrewSerializer
+
 
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
@@ -209,10 +212,51 @@ def delete(request, type, idx):
 # LOAD
 @api_view(['GET', ])
 @permission_classes((IsAuthenticated,))
-def home_load(request):
+def main(request):
+    group_list = []
+
+    group_list.append(request.user.department)
+    groups = Crew.objects.filter(crew_id = request.user.id)
+    group_sz = CrewSerializer(groups, many=True)
+    for g in group_sz.data:
+        group_list.append(g['group'])
+
+    feeds = Feed.objects.filter(group_idx__in = group_list).order_by('-id')
+
+    page = request.GET.get('page')  # 페이지
+
+    paginator = Paginator(feeds, 3)  # 페이지당 3개씩 보여주기
+    page_obj = paginator.get_page(page)
+
+    serializer = FeedSerializer(page_obj, many=True)
+    for data in serializer.data:
+        try:
+            profile = Profile.objects.get(author_id = data['author_id'])
+            profile_sz = UserProfileSerializer(profile)
+            data.update({'profile_image':profile_sz.data['profile_image'],
+                            'nickname':profile_sz.data['nickname']})
+        
+        except:#승원 계정이 superuser라 프로필이 없어서 생기는 오류를 방지하기위한 try catch구문
+            data.update({'profile_image':None,
+                            'nickname':None})
+
+        try:
+            liked = Like.objects.get(feed_id=data['id'], author_id=request.user.id)
+            data.update({'feed_liked':1})
+        except:
+            pass
+        
+        if data['username'] == request.user.username:
+            data.update({'is_author': 1})
+
+    return Response(serializer.data)
+
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+def home_load(request, filter_idx):
     # Model에서 data get
     try:
-        feeds = Feed.objects.all().order_by('-id')
+        feeds = Feed.objects.filter(group_idx = filter_idx).order_by('-id')
     except Feed.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
