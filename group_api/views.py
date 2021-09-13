@@ -7,7 +7,7 @@ from user_api.models import UserCustom
 import json
 
 from rest_framework import status
-from rest_framework.status import HTTP_201_CREATED, HTTP_202_ACCEPTED, HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT
+from rest_framework.status import HTTP_200_OK, HTTP_201_CREATED, HTTP_202_ACCEPTED, HTTP_400_BAD_REQUEST, HTTP_409_CONFLICT
 from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -16,7 +16,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 
-
+from user_api.department import DEPARTMENT
 from user_api.models import Profile
 # Create your views here.
 
@@ -147,6 +147,28 @@ def read_all_groups(request):
 
     return Response(group_sz.data, status=HTTP_201_CREATED)
 
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+def get_user_groups(request):
+    return_dict = {}
+    group_list = []
+    user_id = request.user.id
+    groups = Crew.objects.filter(crew_id = user_id)
+    crew_sz = CrewSerializer(groups, many = True)
+
+    group_list.append({"group_name":DEPARTMENT[request.user.department],
+                       "department_id":request.user.department})
+    try:
+        for c in crew_sz.data:
+            group = Group.objects.get(id = c['group'])
+            group_list.append({"group_name":group.group_name,
+                                "group_id":group.id})
+    except:
+        pass
+
+    return_dict['group_list'] = group_list
+
+    return Response(return_dict, status=HTTP_200_OK)
 
 @api_view(['POST', ])
 @permission_classes((IsAuthenticated,))
