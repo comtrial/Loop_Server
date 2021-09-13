@@ -29,6 +29,7 @@ urlpatterns = [
     path('notice_api/', include('notice_api.urls')),
     path('group_api/', include('group_api.urls')),
     path('notification_api/', include('notification_api.urls')),
+    path('reports_api/', include('reports_api.urls')),
     path('swagger', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
     # path('user_test/', include('user_test.urls')) 

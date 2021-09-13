@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'user_api.apps.UserApiConfig',
     'group_api.apps.GroupApiConfig',
     'notification_api.apps.NotificationApiConfig',
+    'reports_api.apps.ReportsApiConfig',
     
     'rest_framework',
     'rest_framework.authtoken',
