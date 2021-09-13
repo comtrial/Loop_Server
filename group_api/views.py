@@ -41,9 +41,9 @@ def create_group(request):
         group = Group(group_leader=leader,
                       group_name=request.data['group_name'], group_description=request.data['group_description'])
         group.save()
-
         group_sz = GroupSerializer(group)
 
+        #  크루원 자동생성
         crew = UserCustom.objects.get(id=request.user.id)
         group = Group.objects.get(id=group_sz.data['id'])
 
@@ -56,6 +56,9 @@ def create_group(request):
                         data={'group': group.id, 'image': image})
                     if image_sz.is_valid():
                         image_sz.save()
+        
+            group_sz = GroupSerializer(group)
+
         # except:
         #     return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
         except:
