@@ -37,7 +37,11 @@ def report(request, type, idx):
         return Response('없는 사용자입니다.', status=status.HTTP_404_NOT_FOUND)
 
     if type == 'user':
-        obj_user = UserCustom.objects.get(pk=idx)
+        try:
+            obj_user = UserCustom.objects.get(pk=idx)
+        except:
+            return Response("해당 유저가 존재하지 않습니다.", status=status.HTTP_404_NOT_FOUND)
+
         try:
             duplicate = Reports.objects.get(
                 reporter=user, object_user=obj_user)
@@ -53,14 +57,25 @@ def report(request, type, idx):
             report.save()
 
             report_sz = ReportSerializers(report)
-            print('report_sz:', report_sz.data)
+
+            reports_list = Reports.objects.filter(object_user_id=idx)
+            reports_list_sz = ReportSerializers(reports_list, many=True)
+
+            if len(reports_list_sz.data) >= 3:
+                coress_user = UserCustom.objects.get(pk=idx)
+                # coress_user.delete()
 
             return Response(report_sz.data, status=HTTP_201_CREATED)
 
     elif type == 'feed':
-        feed = Feed.objects.get(pk=idx)
         try:
-            duplicate = Reports.objects.get(reporter=user, object_feed=feed)
+            feed = Feed.objects.get(pk=idx)
+        except:
+            return Response("해당 피드가 존재하지 않습니다.", status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            duplicate = Reports.objects.get(
+                reporter=user, object_feed=feed)
             # Group 명 중복 처리
             if duplicate != None:
                 return Response("이미 해당 그룹을 신고하였습니다.", status=HTTP_409_CONFLICT)
@@ -73,14 +88,27 @@ def report(request, type, idx):
             report.save()
 
             report_sz = ReportSerializers(report)
-            print('report_sz:', report_sz.data)
+
+            reports_list = Reports.objects.filter(object_feed_id=idx)
+            reports_list_sz = ReportSerializers(reports_list, many=True)
+
+            if len(reports_list_sz.data) >= 3:
+                coress_feed = Feed.objects.get(pk=idx)
+                # coress_feed.delete()
 
             return Response(report_sz.data, status=HTTP_201_CREATED)
 
     elif type == 'group':
-        group = Group.objects.get(pk=idx)
         try:
-            duplicate = Reports.objects.get(reporter=user, object_group=group)
+            group = Group.objects.get(pk=idx)
+        except:
+            return Response("해당 그룹이 존재하지 않습니다.", status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            print("그래도 여기는 들어와")
+            duplicate = Reports.objects.get(
+                reporter=user, object_group=group)
+            print("그래도 여기는 들어와야죠")
             # Group 명 중복 처리
             if duplicate != None:
                 return Response("이미 해당 그룹을 신고하였습니다.", status=HTTP_409_CONFLICT)
@@ -93,6 +121,12 @@ def report(request, type, idx):
             report.save()
 
             report_sz = ReportSerializers(report)
-            print('report_sz:', report_sz.data)
+
+            reports_list = Reports.objects.filter(object_group_id=idx)
+            reports_list_sz = ReportSerializers(reports_list, many=True)
+
+            if len(reports_list_sz.data) >= 3:
+                coress_group = Group.objects.get(pk=idx)
+                coress_group.delete()
 
             return Response(report_sz.data, status=HTTP_201_CREATED)
