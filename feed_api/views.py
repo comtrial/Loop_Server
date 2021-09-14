@@ -302,6 +302,16 @@ def detail_load(request, idx):
         return_dict = {}
         return_dict.update(serializer.data)
 
+        try:
+            profile = Profile.objects.get(author_id = request.user.id)
+            profile_sz = UserProfileSerializer(profile)
+            return_dict.update({'profile_image':profile_sz.data['profile_image'],
+                            'nickname':profile_sz.data['nickname']})
+        
+        except:#승원 계정이 superuser라 프로필이 없어서 생기는 오류를 방지하기위한 try catch구문
+            return_dict.update({'profile_image':None,
+                                'nickname':None})
+
         if serializer.data['username'] == request.user.username:
             return_dict.update({'is_author': 1})
 
@@ -325,7 +335,7 @@ def get_like(request, type, idx):
 
     if type =='feed':
         like = Like.objects.filter(feed_id = idx)
-        
+
         for l in like:
             profile = Profile.objects.get(author_id = l.author_id)
             profile_sz = UserProfileSerializer(profile)
