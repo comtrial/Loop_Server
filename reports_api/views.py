@@ -105,10 +105,8 @@ def report(request, type, idx):
             return Response("해당 그룹이 존재하지 않습니다.", status=status.HTTP_404_NOT_FOUND)
 
         try:
-            print("그래도 여기는 들어와")
             duplicate = Reports.objects.get(
                 reporter=user, object_group=group)
-            print("그래도 여기는 들어와야죠")
             # Group 명 중복 처리
             if duplicate != None:
                 return Response("이미 해당 그룹을 신고하였습니다.", status=HTTP_409_CONFLICT)
