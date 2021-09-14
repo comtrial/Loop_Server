@@ -246,6 +246,9 @@ def home_load(request):
                 data.update({'feed_liked':1})
             except:
                 pass
+
+            like_count = Like.objects.filter(feed_id = data['id']).count()
+            data.update({'feed_like_count':like_count})
             
             if data['username'] == request.user.username:
                 data.update({'is_author': 1})
@@ -285,6 +288,9 @@ def detail_load(request, idx):
                 comment.update({'comment_liked': 1})
             except:
                 pass
+            
+            comment_like_count = Like.objects.filter(comment_id=comment['id']).count()
+            comment.update({'comment_like_count':comment_like_count})
 
             if comment['username'] == request.user.username:
                 comment.update({'is_author': 1})
@@ -302,8 +308,45 @@ def detail_load(request, idx):
         try:
             liked = Like.objects.get(feed_id=idx, author_id=request.user.id)
             return_dict.update({'feed_liked': 1})
-
+        
         except:
             pass
+
+        like_count = Like.objects.filter(feed_id = idx).count()
+        return_dict.update({'feed_like_count':like_count})
+
+        return Response(return_dict)
+
+@api_view(['GET', ])
+@permission_classes((IsAuthenticated,))
+def get_like(request, type, idx):
+    profile_list = []
+    return_dict = {}
+
+    if type =='feed':
+        like = Like.objects.filter(feed_id = idx)
+        
+        for l in like:
+            profile = Profile.objects.get(author_id = l.author_id)
+            profile_sz = UserProfileSerializer(profile)
+            profile_list.append({'profile_image':profile_sz.data['profile_image'],
+                                 'nickname':profile_sz.data['nickname'],
+                                 'author_id':l.author_id})
+
+        return_dict['Like_list'] = profile_list
+
+        return Response(return_dict)
+    
+    elif type =='comment':
+        like = Like.objects.filter(comment_id = idx)
+
+        for l in like:
+            profile = Profile.objects.get(author_id = l.author_id)
+            profile_sz = UserProfileSerializer(profile)
+            profile_list.append({'profile_image':profile_sz.data['profile_image'],
+                                 'nickname':profile_sz.data['nickname'],
+                                 'author_id':l.author_id})
+
+        return_dict['Like_list'] = profile_list
 
         return Response(return_dict)

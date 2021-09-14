@@ -13,16 +13,13 @@ class HashTagSerializer(serializers.ModelSerializer):
         fields = ['feed', 'tag']
 
 class LikeSerializer(serializers.ModelSerializer):
-    username = serializers.SerializerMethodField('get_username_from_author')
-
+    
     class Meta:
         model = Like
         # fields = ['username']
-        fields = ['username', 'feed', 'comment']
+        fields = ['feed', 'author_id', 'comment']
     
-    def get_username_from_author(self, feed):   
-        username = feed.author.username
-        return username 
+
 
 class FeedImageSerializer(serializers.ModelSerializer):
 
@@ -46,11 +43,11 @@ class CommentSerializer(serializers.ModelSerializer):
 
     cocomment = CocommentSerializer(many = True, read_only = True)
     username = serializers.SerializerMethodField('get_username_from_author')
-    like = LikeSerializer(many = True, read_only = True)
+    # like = LikeSerializer(many = True, read_only = True)
 
     class Meta:
         model = Comment
-        fields = ['id', 'feed', 'username', 'content', 'created_at', 'like', 'cocomment', 'author_id']
+        fields = ['id', 'feed', 'username', 'content', 'created_at', 'cocomment', 'author_id']
     
     def get_username_from_author(self, comment):   
         username = comment.author.username
@@ -67,13 +64,13 @@ class FeedSerializer(serializers.ModelSerializer):
     username = serializers.SerializerMethodField('get_username_from_author')
     feed_image = FeedImageSerializer(many = True, read_only = True)
     feed_comment = CommentSerializer(many = True, read_only = True)
-    like = LikeSerializer(many = True, read_only = True)
+    # like = LikeSerializer(many = True, read_only = True)
     tag = HashTagSerializer(many = True, read_only = True)
     # tags = TagListSerializerField()
 
     class Meta:
         model = Feed
-        fields = ['id', 'author_id', 'username', 'title', 'tag', 'created_at', 'content', 'feed_image', 'feed_comment', 'like', 'group_idx']
+        fields = ['id', 'author_id', 'username', 'title', 'tag', 'created_at', 'content', 'feed_image', 'feed_comment', 'group_idx']
  
     def get_username_from_author(self, feed):  
         username = feed.author.username
