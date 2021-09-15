@@ -16,6 +16,7 @@ from rest_framework.authtoken.models import Token
 
 # to custom serilizer
 from .serializer import FeedSerializer, CommentSerializer, LikeSerializer, HashTagSerializer, FeedImageSerializer, CocommentSerializer, UserProfileSerializer
+from user_api.serializers import ProfileSerializer
 
 # to notification 
 import notification_api.views as notification_api
@@ -102,6 +103,8 @@ def comment_upload(request, idx):
     user = request.user
 
     try:
+        profile = Profile.objects.get(author=user.id)
+        profile_sz = ProfileSerializer(profile)
         user = Comment(author=user)
         comment_sz = CommentSerializer(
             user, data={'feed': idx, 'content': request.data['content']})
@@ -115,7 +118,18 @@ def comment_upload(request, idx):
 
         return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
 
-    return Response(comment_sz.data, status=status.HTTP_201_CREATED)
+    return_dict = {
+        "id": comment_sz.data['id'],
+        "feed": comment_sz.data['feed'],
+        "username": comment_sz.data['username'],
+        "content": comment_sz.data['content'],
+        "created_at": comment_sz.data['created_at'],
+        "cocomment": comment_sz.data['cocomment'],
+        "author_id": comment_sz.data['author_id'],
+        "profile_image": profile_sz.data['profile_image']
+    }
+
+    return Response(return_dict, status=status.HTTP_201_CREATED)
 
 
 @api_view(['POST', ])
