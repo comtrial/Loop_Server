@@ -164,8 +164,14 @@ def get_user_groups(request):
     try:
         for c in crew_sz.data:
             group = Group.objects.get(id = c['group'])
-            group_list.append({"group_name":group.group_name,
-                                "group_id":group.id})
+            group_sz = GroupSerializer(group)
+            group_list.append(
+                {
+                    "group_name":group.group_name,
+                    "group_image":group_sz.data['group_image'],
+                    "group_id":group.id
+                                }
+            )
     except:
         pass
 
