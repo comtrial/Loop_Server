@@ -186,24 +186,21 @@ def update(request, type, idx):
 @api_view(['DELETE', ])
 @permission_classes((IsAuthenticated,))
 def delete(request, type, idx):
-    user = request.user.id
+
     if type == "feed":
         feed = Feed.objects.get(pk=idx)
-        if feed.author_id == user:
-            feed.delete()
-            return Response("피드가 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
+        feed.delete()
+        return Response("피드가 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
 
-    if type == "comment":
+    elif type == "comment":
         comment = Comment.objects.get(pk=idx)
-        if comment.author_id == user:
-            comment.delete()
-            return Response("댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
+        comment.delete()
+        return Response("댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
 
-    if type == "cocomment":
+    elif type == "cocomment":
         comment = Cocomment.objects.get(pk=idx)
-        if comment.author_id == user:
-            comment.delete()
-            return Response("대댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
+        comment.delete()
+        return Response("대댓글이 삭제되었습니다.", status=status.HTTP_202_ACCEPTED)
 
 
 # LOAD
@@ -232,8 +229,12 @@ def home_load(request):
         serializer = FeedSerializer(page_obj, many=True)
         for data in serializer.data:
             try:
+                
+                for d in data['feed_comment']:
+                    print(d['author_id'])
                 profile = Profile.objects.get(author_id = data['author_id'])
                 profile_sz = UserProfileSerializer(profile)
+
                 data.update({'profile_image':profile_sz.data['profile_image'],
                              'nickname':profile_sz.data['nickname']})
             
