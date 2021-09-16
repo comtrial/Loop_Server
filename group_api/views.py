@@ -159,8 +159,6 @@ def get_user_groups(request):
     groups = Crew.objects.filter(crew_id = user_id)
     crew_sz = CrewSerializer(groups, many = True)
 
-    group_list.append({"group_name":DEPARTMENT[request.user.department],
-                       "department_id":request.user.department})
     try:
         for c in crew_sz.data:
             group = Group.objects.get(id = c['group'])
