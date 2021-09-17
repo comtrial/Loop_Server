@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from .serializers import UserCustomSerializer, ProfileSerializer, Customizing_imgs_Serializer, CustomizingSerializer
 from feed_api.serializer import FeedSerializer
 from group_api.serializers import CrewSerializer, GroupSerializer
+from feed_api.serializer import HashTagSerializer
 from .models import Customizing, Customizing_imgs, UserCustom, Profile
 from feed_api.models import Feed
 from group_api.models import Group, Crew
@@ -302,6 +303,17 @@ def profile_update(request, prof_type, idx):
                     })
                     profile_sz.is_valid()
                     profile_sz.save()
+                    try:
+                        for tag in request.data['hashtag'].split('#'):
+                            if tag != '':
+                                tag_sz = HashTagSerializer(
+                                    data={'feed': profile.data['id'], 'tag': tag})
+                                if tag_sz.is_valid():
+                                    tag_sz.save()
+
+                    except:
+                        pass
+                    print("profile_sz:", profile_sz.data)
                     print('Update Completed')
                     return Response(profile_sz.data)
                 except Profile.DoesNotExist:

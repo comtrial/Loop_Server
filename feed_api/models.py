@@ -2,6 +2,7 @@ from django.db import models
 # for store user data by authorization
 from django.contrib.auth.models import User
 from django.conf import settings
+from user_api.models import Profile
 
 #For hastag
 # class Tag(TagBase):
@@ -48,6 +49,7 @@ class Like(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
 class HashTag(models.Model):
-    feed = models.ForeignKey('Feed', related_name='tag', on_delete=models.CASCADE)
+    feed = models.ForeignKey('Feed', related_name='tag', on_delete=models.CASCADE, null=True)
+    profile = models.ForeignKey(Profile, related_name='hash_prof', on_delete=models.CASCADE, null=True)
     tag = models.CharField(max_length=100)
 
