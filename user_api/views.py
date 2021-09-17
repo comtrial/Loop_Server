@@ -274,6 +274,7 @@ def profile_load(request, idx):
 @permission_classes((IsAuthenticated,))
 def profile_update(request, prof_type, idx):
     if str(request.user.id) == idx:
+
         try:
             if prof_type == 'profile_info_picture':
                 try:
@@ -291,6 +292,21 @@ def profile_update(request, prof_type, idx):
                 except Profile.DoesNotExist:
                     return Response('Profile data is not valid', status=status.HTTP_404_NOT_FOUND)
 
+            elif prof_type == 'profile_info_hashtag':
+            
+                profile = Profile.objects.get(author=idx)
+                for tag in request.data['hashtag'].split('#'):
+                    if tag != '':
+                        tag_sz = HashTagSerializer(
+                            data={'profile': profile.id, 'tag': tag})
+                        try:
+                            tag_sz.is_valid()
+                            tag_sz.save()
+                        except:
+                            return Response('유효하지 않은 형식입니다.', status=status.HTTP_403_FORBIDDEN)
+                return Response(tag_sz.data)
+
+
             elif prof_type == 'profile_info_context':
                 try:
                     profile = Profile.objects.get(author=idx)
@@ -303,17 +319,7 @@ def profile_update(request, prof_type, idx):
                     })
                     profile_sz.is_valid()
                     profile_sz.save()
-                    try:
-                        for tag in request.data['hashtag'].split('#'):
-                            if tag != '':
-                                tag_sz = HashTagSerializer(
-                                    data={'feed': profile.data['id'], 'tag': tag})
-                                if tag_sz.is_valid():
-                                    tag_sz.save()
-
-                    except:
-                        pass
-                    print("profile_sz:", profile_sz.data)
+                    
                     print('Update Completed')
                     return Response(profile_sz.data)
                 except Profile.DoesNotExist:

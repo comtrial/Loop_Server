@@ -10,7 +10,7 @@ class HashTagSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = HashTag
-        fields = ['feed', 'tag']
+        fields = ['profile', 'feed', 'tag']
 
 class LikeSerializer(serializers.ModelSerializer):
     
